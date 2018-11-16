@@ -353,11 +353,76 @@ export default {
     created: function () {
         const that = this;
         console.log(`paramsType`, that.paramsType);
-        if (that.preDefinedType === that.paramsType) {
-            that.updatePlanTableData();
-        }
+        // if (that.preDefinedType === that.paramsType) {
+        //     that.updatePlanTableData();
+        // }
+        that.updatePlanTableData();
     },
     props: ['preDefinedType', 'paramsType'],
+    methods: {
+        // 根据入库类型获得所有的入库计划
+        getAllStockInPlanByEntryType(paramsType, callback){
+            const that = this;
+            that.$axios
+                .post(`${window.$config.HOST}/warehouse/stockIn/getAllStockInPlan`, paramsType)
+                .then(response => {
+                    that.plans.plans = response.data;
+                    that.plans.pagination.total = response.data.lenth;
+                })
+                .catch(error => {
+                    console.log(`加载出错，加载类别为` + that.paramsType, error);
+                });
+            if (callback !== undefined)
+                return callback();
+        },
+        // 
+        getStockInPlanByPage(params, callback){
+            const that = this;
+            that.$axios
+                .post(`${window.$config.HOST}/warehouse/stockIn/getStockInPlanByPage`, {
+                    page : 1,
+                    number : that.plans.pagination.pageSize,
+                    entryType : that.paramsType 
+                }, {
+                    headers: {
+                        'Access-Control-Allow-Origin': '*'
+                    }
+                })
+                .then(response => {
+                    console.log(response);
+                    that.plans.plans = response.data;
+                })
+        },
+        updatePlanTableData() {
+            const that = this;
+            console.log("in update");
+            if (that.controlData.hasUpdated === false){
+                let params = {
+                    page : 1,
+                    number : that.plans.pagination.pageSize,
+                    entryType : that.paramsType
+                };
+                that.getStockInPlanByPage(params, () => {
+                    that.controlData.hasUpdated = true;
+                })
+            }
+            else {
+                params['page'] = that.plans.pagination.currentPage;
+                params['number'] = that.plans.pagination.pageSize;
+                params['entryType'] = that.paramsType;
+                that.getStockInPlanByPage(params);
+            }
+        }
+    },
+    watch: {
+            paramsType: function (val) {
+                const that = this;
+                console.log(`paramsType`, val);
+                if (val === that.preDefinedType) {
+                    that.updatePlanTableData();
+                }
+            }
+        }
 };
 </script>
 

@@ -63,11 +63,12 @@ router.beforeEach((to, from, next) => {
 // })
 
 window.$config = {};
+// window.$config.HOST == 'http://localhost:8180';
 
 if (window.location.hostname === 'localhost' && window.location.port === "8080") {
-  window.$config.HOST = 'http://localhost:8080';
+  window.$config.HOST = 'http://localhost:8180';
 } else if (window.location.hostname === 'localhost' && window.location.port === "8081") {
-  window.$config.HOST = 'http://localhost:8080';
+  window.$config.HOST = 'http://localhost:8180';
 } else {
   window.$config.HOST = 'http://localhost:3000';
 }
