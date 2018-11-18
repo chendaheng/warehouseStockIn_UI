@@ -36,7 +36,16 @@ const thrmenuNavbar = [{
 // -------------------------------------------- 为用户新增代码 --------------------------------------------
 // 入库计划 -- 入库计划画面
 const StockInPlan = r => require.ensure([], () => r(require('../page/StockIn/StockInPlan')), 'StockInPlan');
-
+// 入库模块 -- 收货画面
+const StockInReceive = r => require.ensure([], () => r(require('../page/StockIn/StockInReceive')), 'StockInReceive');
+// 入库模块 -- 收获检验任务列表
+const StockInTestList = r => require.ensure([], () => r(require('../page/StockIn/StockInTestList')), 'StockInTestList');
+// 入库模块 -- 收货检验画面
+const StockInTest = r => require.ensure([], () => r(require('../page/StockIn/StockInTest')), 'StockInTest');
+// 入库模块 -- 采购订单入库
+const StockInPurchase = r => require.ensure([], () => r(require('../page/StockIn/StockInPurchase')), 'StockInPurchase');
+// 入库模块 -- 其他入库
+const StockInOther = r => require.ensure([], () => r(require('../page/StockIn/StockInOther')), 'StockInOther');
 // -------------------------------------------- 路由配置部分 --------------------------------------------
 export default [{
   path: Config.route.login,
@@ -102,6 +111,41 @@ export default [{
     component: StockInPlan,
     meta: {
       bcrumd: ['入库', '入库计划画面']
+    }
+  }, { // 收货画面
+    path: '/stockin/stockinreceive',
+    name: 'StockInReceive',
+    component: StockInReceive,
+    meta: {
+      bcrumd: ['入库', '收获画面'],
+    }
+  }, { // 收货检验任务列表
+    path: '/stockin/stockintestlist',
+    name: 'StockInTestList',
+    component: StockInTestList,
+    meta: {
+      bcrumd: ['入库', '收货检验任务列表'],
+    }
+  }, { // 收货检验画面
+    path: '/stockin/stockintest',
+    name: 'StockInTest',
+    component: StockInTest,
+    meta: {
+      bcrumd: ['入库', '收货检验画面'],
+    }
+  }, { // 采购订单入库
+    path: '/stockin/stockinpurchase',
+    name: 'StockInPurchase',
+    component: StockInPurchase,
+    meta: {
+      bcrumd: ['入库', '采购订单入库'],
+    }
+  }, { // 其他入库
+    path: '/stockin/stockinother',
+    name: 'StockInOther',
+    component: StockInOther,
+    meta: {
+      bcrumd: ['入库', '其他入库'],
     }
   }
 ]

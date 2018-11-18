@@ -33,6 +33,8 @@ Vue.prototype.$conf = Config;
 
 Vue.config.productionTip = false
 
+// Vue.prototype.HOST='/api'
+
 // 创建路由实例
 const router = new VueRouter({
   routes: routes,

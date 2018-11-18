@@ -89,6 +89,14 @@
           入库模块
         </template>
         <el-menu-item index="/stockin/stockinplan"><i class="el-icon-document"></i>入库计划画面</el-menu-item>
+        <el-menu-item index="/stockin/stockinreceive"><i class="el-icon-document"></i>收货画面</el-menu-item>
+        <el-menu-item index="/stockin/stockintestlist"><i class="el-icon-document"></i>收货检验任务列表</el-menu-item>
+        <el-menu-item index="/stockin/stockintest"><i class="el-icon-document"></i>收获检验画面</el-menu-item>
+        <el-menu-item index="/stockin/stockinpurchase"><i class="el-icon-document"></i>采购订单入库</el-menu-item>
+        <el-menu-item index="/stockin/stockinother"><i class="el-icon-document"></i>其他入库画面</el-menu-item>
+        <!-- <el-menu-item index="/stockin/stockinpickandpack"><i class="el-icon-document"></i>非计划收获画面</el-menu-item>
+        <el-menu-item index="/stockin/stockinpickandpack"><i class="el-icon-document"></i>入库列表画面</el-menu-item>
+        <el-menu-item index="/stockin/stockinpickandpack"><i class="el-icon-document"></i>入库上架画面</el-menu-item> -->
       </el-submenu>
     </el-menu>
   </div>

@@ -167,9 +167,9 @@
                             label="操作"
                             width="150">
                             <template slot-scope="scope">
-                                <el-button type="text" size="small" @click="handlePlanTableStockInFunction(scope.row)">收货</el-button>
-                                <el-button type="text" size="small">检验</el-button>
-                                <el-button type="text" size="small">入库</el-button>
+                                <el-button type="text" size="small" @click="handlePlanTableReceiveFunction(scope.row)">收货</el-button>
+                                <el-button type="text" size="small" @click="handlePlanTableTestFunction(scope.row)">检验</el-button>
+                                <el-button type="text" size="small" @click="handlePlanTableStockInFunction(scope.row)">入库</el-button>
                             </template>
                         </el-table-column>
                     </el-table>
@@ -321,7 +321,7 @@ export default {
                 }
             },
             planDetails: {
-                hasPlanDetails: true,
+                hasPlanDetails: false,
                 planDetails: [
                     {
                         index: "1",
@@ -353,18 +353,21 @@ export default {
     created: function () {
         const that = this;
         console.log(`paramsType`, that.paramsType);
-        // if (that.preDefinedType === that.paramsType) {
-        //     that.updatePlanTableData();
-        // }
-        that.updatePlanTableData();
+        console.log(`preDefinedType`, that.preDefinedType);
+        if (that.preDefinedType === that.paramsType) {
+            console.log('获取类型'+that.paramsType+'的所有入库计划')
+            that.getAllStockInPlanByEntryType(that.paramsType);
+        }
     },
+    // preDefinedType:事先已经定义好了 paramsType:根据tabs切换进行改变
     props: ['preDefinedType', 'paramsType'],
     methods: {
+        // ------------------------------------ 工具函数 ------------------------------------
         // 根据入库类型获得所有的入库计划
         getAllStockInPlanByEntryType(paramsType, callback){
             const that = this;
             that.$axios
-                .post(`${window.$config.HOST}/warehouse/stockIn/getAllStockInPlan`, paramsType)
+                .post(`http://localhost:8180/warehouse/stockIn/getAllStockInPlan`, paramsType)
                 .then(response => {
                     that.plans.plans = response.data;
                     that.plans.pagination.total = response.data.lenth;
@@ -375,24 +378,40 @@ export default {
             if (callback !== undefined)
                 return callback();
         },
-        // 
+        // 根据页码获取所有的入库计划
         getStockInPlanByPage(params, callback){
             const that = this;
             that.$axios
-                .post(`${window.$config.HOST}/warehouse/stockIn/getStockInPlanByPage`, {
+                .post(`http://localhost:8180/warehouse/stockIn/getStockInPlanByPage`, {
                     page : 1,
                     number : that.plans.pagination.pageSize,
                     entryType : that.paramsType 
-                }, {
-                    headers: {
-                        'Access-Control-Allow-Origin': '*'
-                    }
                 })
                 .then(response => {
                     console.log(response);
                     that.plans.plans = response.data;
                 })
+            if (callback !== undefined)
+                return callback();
         },
+        // 根据入库计划流水号获取相应的入库计划明细
+        getStockInPlanDetailByPlanSerialNo(params, callback){
+            const that = this;
+            that.$axios
+                .post(`http://localhost:8180/warehouse/stockIn/getStockInPlanByPage`, params)
+                .then(response => {
+                    console.log(`加载计划明细成功，加载流水号为：`, params.planSerialNo);
+                    that.planDetails.hasPlanDetails = true;
+                    that.planDetails.planDetails = response.data;
+                })
+                .catch(error => {
+                    console.log(`加载计划明细时出错，加载流水号为：`, params.planSerialNo);
+                });
+            if (callback !== undefined) 
+                return callback();
+        },
+        // ------------------------------------ 业务函数 ------------------------------------
+        // 通过paramsType和页码更新数据
         updatePlanTableData() {
             const that = this;
             console.log("in update");
@@ -412,8 +431,32 @@ export default {
                 params['entryType'] = that.paramsType;
                 that.getStockInPlanByPage(params);
             }
+        },
+        handlePlanTableReceiveFunction(row) {
+            console.log(`row = `, row);
+            console.log(`点击了本行的收货按钮`);
+        },
+        handlePlanTableTestFunction(row) {
+            console.log(`row = `, row);
+            console.log(`点击了本行的检验按钮`);
+        },
+        handlePlanTableStockInFunction(row) {
+            console.log(`row = `, row);
+            console.log(`点击了本行的入库按钮`);
+        },
+        handlePlanTableClick(row, event, column){
+            const that = this;
+            console.log(`row`, row);
+            if (column.label !== "操作") {
+                console.log(`本行被点击，显示明细`);
+                let params = {
+                    planSerialNo: row.planSerialNo
+                }
+                that.planDetails.hasPlanDetails = true;
+            }
         }
     },
+    // 监控paramsType的变化
     watch: {
             paramsType: function (val) {
                 const that = this;
