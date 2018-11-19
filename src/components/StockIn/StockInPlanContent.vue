@@ -73,7 +73,7 @@
                     </el-col>
                     <!-- 搜索按钮部分 -->
                     <el-col :span="2">
-                        <el-button type="primary" icon="el-icon-search">搜索</el-button>
+                        <el-button type="primary" icon="el-icon-search" @click="handlePlanTableSearch()">搜索</el-button>
                     </el-col>
                 </el-row>
             </div>
@@ -108,7 +108,7 @@
                             show-overflow-tooltip>
                         </el-table-column>
                         <el-table-column
-                            prop="status"
+                            prop="planStatus"
                             label="计划状态"
                             show-overflow-tooltip>
                         </el-table-column>
@@ -138,7 +138,7 @@
                             show-overflow-tooltip>
                         </el-table-column>
                         <el-table-column
-                            prop="deliveryAdd"
+                            prop="deliveryAddr"
                             label="发货地址"
                             show-overflow-tooltip>
                         </el-table-column>
@@ -148,7 +148,7 @@
                             show-overflow-tooltip>
                         </el-table-column>
                         <el-table-column
-                            prop="receivingAdd"
+                            prop="receivingAddr"
                             label="收货地址"
                             show-overflow-tooltip>
                         </el-table-column>
@@ -177,6 +177,8 @@
                 <!-- 分页 -->
                 <div class="pagination">
                     <el-pagination
+                        @current-change="handleCurrentChange"
+                        @size-change="handleSizeChange"
                         :current-page=plans.pagination.currentPage
                         :page-sizes=plans.pagination.pageSizes
                         :page-size=plans.pagination.pageSize
@@ -284,15 +286,15 @@ export default {
                         planSerialNo: "plan001",
                         stockInType: "采购入库",
                         vouchSerialNo: "pur001",
-                        status: "未到货",
+                        planStatus: "未到货",
                         dept: "部门1",
                         owner: "发起人1",
                         startDate: "2018-10-01",
                         arrivalDate: "2018-10-03",
                         delivery: "江阴供应商",
-                        deliveryAdd: "江苏江阴",
+                        deliveryAddr: "江苏江阴",
                         warehouse: "仓库1",
-                        receivingAdd: "收货地址1",
+                        receivingAddr: "收货地址1",
                         operUser: "收货人1",
                         note: "备注1"
                     },
@@ -300,23 +302,23 @@ export default {
                         planSerialNo: "plan002",
                         stockInType: "采购入库",
                         vouchSerialNo: "pur002",
-                        status: "未到货",
+                        planStatus: "未到货",
                         dept: "部门2",
                         owner: "发起人2",
                         startDate: "2018-10-02",
                         arrivalDate: "2018-10-05",
                         delivery: "杭州供应商",
-                        deliveryAdd: "浙江杭州",
+                        deliveryAddr: "浙江杭州",
                         warehouse: "仓库2",
-                        receivingAdd: "收货地址2",
+                        receivingAddr: "收货地址2",
                         operUser: "收货人2",
                         note: "备注2"
                     }
                 ],
                 pagination: {
                     currentPage: 1,
-                    pageSizes: [10, 20, 30, 50, 100],
-                    pageSize: 10,
+                    pageSizes: [5, 10, 20, 30, 50],
+                    pageSize: 5,
                     total: 400,
                 }
             },
@@ -356,21 +358,33 @@ export default {
         console.log(`preDefinedType`, that.preDefinedType);
         if (that.preDefinedType === that.paramsType) {
             console.log('获取类型'+that.paramsType+'的所有入库计划')
-            that.getAllStockInPlanByEntryType(that.paramsType);
+            let params = {
+                page : 1,
+                number : that.plans.pagination.pageSize,
+                entryType : parseInt(that.paramsType)
+            }
+            that.getAllStockInPlanByEntryType(params);
+            that.getStockInPlanByPage(params);
         }
+        // console.log(`stockInType` + stockInType);
     },
     // preDefinedType:事先已经定义好了 paramsType:根据tabs切换进行改变
     props: ['preDefinedType', 'paramsType'],
     methods: {
         // ------------------------------------ 工具函数 ------------------------------------
         // 根据入库类型获得所有的入库计划
-        getAllStockInPlanByEntryType(paramsType, callback){
+        getAllStockInPlanByEntryType(params, callback){
             const that = this;
+            var jsonLength = 0;
             that.$axios
-                .post(`http://localhost:8180/warehouse/stockIn/getAllStockInPlan`, paramsType)
+                .post(`http://localhost:8090/wareHouse/stockIn/getAllStockInPlanByEntryType`, params)
                 .then(response => {
-                    that.plans.plans = response.data;
-                    that.plans.pagination.total = response.data.lenth;
+                    for (var item in response.data){
+                        jsonLength++;
+                    }
+                    that.plans.pagination.total = jsonLength;
+                    // that.plans.plans = response.data;
+                    console.log(`该入库类型下所有的计划数量为`+ that.plans.pagination.total);
                 })
                 .catch(error => {
                     console.log(`加载出错，加载类别为` + that.paramsType, error);
@@ -382,33 +396,222 @@ export default {
         getStockInPlanByPage(params, callback){
             const that = this;
             that.$axios
-                .post(`http://localhost:8180/warehouse/stockIn/getStockInPlanByPage`, {
-                    page : 1,
-                    number : that.plans.pagination.pageSize,
-                    entryType : that.paramsType 
-                })
+                .post(`http://localhost:8090/wareHouse/stockIn/getStockInPlanByPage`, params)
                 .then(response => {
-                    console.log(response);
-                    that.plans.plans = response.data;
+                    // console.log(response);
+                    // let result = changeStockInPlan(response.data);
+                    var result = response.data;
+                    for (var i = 0; i < result.length; i++){
+                        var thisResult = result[i]
+                        if (thisResult.hasOwnProperty("entryType")){
+                            // console.log(`i = `+ i);
+                            var stockInType = "";
+                            if (parseInt(thisResult["entryType"]) == 1){
+                                stockInType = "采购入库";
+                                // console.log(stockInType);
+                            }
+                            if (parseInt(thisResult["entryType"]) == 2){
+                                stockInType = "委外加工入库";
+                            }
+                            if (parseInt(thisResult["entryType"]) == 3){
+                                stockInType = "生产入库";
+                            }
+                            if (parseInt(thisResult["entryType"]) == 4){
+                                stockInType = "销售退货";
+                            }
+                            if (parseInt(thisResult["entryType"]) == 5){
+                                stockInType = "生产退货";
+                            }
+                            if (parseInt(thisResult["entryType"]) == 6){
+                                stockInType = "其他入库";
+                            }
+                            result[i]["stockInType"] = stockInType;
+                            // console.log(result[i]["stockInType"]);
+                        }
+                        if (thisResult.hasOwnProperty("status")){
+                            var planStatus = "";
+                            if (parseInt(thisResult["status"]) == 0){
+                                planStatus = "未到货"
+                            }
+                            if (parseInt(thisResult["status"]) == 1){
+                                planStatus = "已收货"
+                            }
+                            if (parseInt(thisResult["status"]) == 2){
+                                planStatus = "已检验"
+                            }
+                            if (parseInt(thisResult["status"]) == 3){
+                                planStatus = "已入库"
+                            }
+                            result[i]["planStatus"] = planStatus;
+                        }
+                        if (thisResult.hasOwnProperty("deptId")){
+                            var dept = thisResult["deptId"];
+                            result[i]["dept"] = dept.toString();
+                        }
+                        if (thisResult.hasOwnProperty("onwerId")){
+                            var onwer = thisResult["onwerId"];
+                            result[i]["owner"] = onwer.toString();
+                        }
+                        if (thisResult.hasOwnProperty("deliveryId")){
+                            var delivery = thisResult["deliveryId"];
+                            result[i]["delivery"] = delivery.toString();
+                        }
+                        if (thisResult.hasOwnProperty("deliveryAddrId")){
+                            var deliveryAddr = thisResult["deliveryAddrId"];
+                            result[i]["deliveryAddr"] = deliveryAddr.toString();
+                        }
+                        if (thisResult.hasOwnProperty("warehouseId")){
+                            var warehouse = thisResult["warehouseId"];
+                            result[i]["warehouse"] = warehouse.toString();
+                        }
+                        if (thisResult.hasOwnProperty("receivingAddrId")){
+                            var receivingAddr = thisResult["receivingAddrId"];
+                            result[i]["receivingAddr"] = receivingAddr.toString();
+                        }
+                        if (thisResult.hasOwnProperty("operUserId")){
+                            var operUser = thisResult["operUserId"];
+                            result[i]["operUser"] = operUser.toString();
+                        }
+                    }
+                    that.plans.plans = result;
+                    // that.plans.plans = changeStockInPlan(result);
                 })
             if (callback !== undefined)
                 return callback();
+        },
+        // 改变入库计划显示内容
+        changeStockInPlan(result){
+            for (var i = 0; i < result.length; i++){
+                var thisResult = result[i]
+                if (thisResult.hasOwnProperty("entryType")){
+                    // console.log(`i = `+ i);
+                    var stockInType = "";
+                    if (parseInt(thisResult["entryType"]) == 1){
+                        stockInType = "采购入库";
+                        // console.log(stockInType);
+                    }
+                    if (parseInt(thisResult["entryType"]) == 2){
+                        stockInType = "委外加工入库";
+                    }
+                    if (parseInt(thisResult["entryType"]) == 3){
+                        stockInType = "生产入库";
+                    }
+                    if (parseInt(thisResult["entryType"]) == 4){
+                        stockInType = "销售退货";
+                    }
+                    if (parseInt(thisResult["entryType"]) == 5){
+                        stockInType = "生产退货";
+                    }
+                    if (parseInt(thisResult["entryType"]) == 6){
+                        stockInType = "其他入库";
+                    }
+                    result[i]["stockInType"] = stockInType;
+                }
+                if (thisResult.hasOwnProperty("status")){
+                    var planStatus = "";
+                    if (parseInt(thisResult["status"]) == 0){
+                        planStatus = "未到货"
+                    }
+                    if (parseInt(thisResult["status"]) == 1){
+                        planStatus = "已收货"
+                    }
+                    if (parseInt(thisResult["status"]) == 2){
+                        planStatus = "已检验"
+                    }
+                    if (parseInt(thisResult["status"]) == 3){
+                        planStatus = "已入库"
+                    }
+                    result[i]["planStatus"] = planStatus;
+                }
+                if (thisResult.hasOwnProperty("deptId")){
+                    var dept = thisResult["deptId"];
+                    result[i]["dept"] = dept.toString();
+                }
+                if (thisResult.hasOwnProperty("onwerId")){
+                    var onwer = thisResult["onwerId"];
+                    result[i]["owner"] = onwer.toString();
+                }
+                if (thisResult.hasOwnProperty("deliveryId")){
+                    var delivery = thisResult["deliveryId"];
+                    result[i]["delivery"] = delivery.toString();
+                }
+                if (thisResult.hasOwnProperty("deliveryAddrId")){
+                    var deliveryAddr = thisResult["deliveryAddrId"];
+                    result[i]["deliveryAddr"] = deliveryAddr.toString();
+                }
+                if (thisResult.hasOwnProperty("warehouseId")){
+                    var warehouse = thisResult["warehouseId"];
+                    result[i]["warehouse"] = warehouse.toString();
+                }
+                if (thisResult.hasOwnProperty("receivingAddrId")){
+                    var receivingAddr = thisResult["receivingAddrId"];
+                    result[i]["receivingAddr"] = receivingAddr.toString();
+                }
+                if (thisResult.hasOwnProperty("operUserId")){
+                    var operUser = thisResult["operUserId"];
+                    result[i]["operUser"] = operUser.toString();
+                }
+            }
+            return result;
         },
         // 根据入库计划流水号获取相应的入库计划明细
         getStockInPlanDetailByPlanSerialNo(params, callback){
             const that = this;
             that.$axios
-                .post(`http://localhost:8180/warehouse/stockIn/getStockInPlanByPage`, params)
+                .post(`http://localhost:8090/wareHouse/stockIn/getStockInPlanDetailByPlanSerialNo`, params)
                 .then(response => {
-                    console.log(`加载计划明细成功，加载流水号为：`, params.planSerialNo);
+                    var result = response.data;
+                    for (var i = 0; i < result.length; i++){
+                        var thisResult = result[i];
+                        result[i]["index"] = (i + 1).toString();
+                        if (thisResult.hasOwnProperty("specification")){
+                            var format = thisResult["specification"];
+                            result[i]["format"] = format.toString();
+                        }
+                        if (thisResult.hasOwnProperty("unitId")){
+                            var unit = thisResult["unitId"];
+                            result[i]["unit"] = "计量单位" + unit.toString();
+                        }
+                        if (thisResult.hasOwnProperty("planQuantity")){
+                            var stockInNum = thisResult["planQuantity"];
+                            result[i]["stockInNum"] = stockInNum.toString();
+                        }
+                        if (thisResult.hasOwnProperty("price")){
+                            var singlePrice = thisResult["planQuantity"];
+                            result[i]["singlePrice"] = singlePrice.toString();
+                        }
+                    }
                     that.planDetails.hasPlanDetails = true;
                     that.planDetails.planDetails = response.data;
+                    console.log(`加载计划明细成功，加载流水号为：`, params.planSerialNo);
                 })
                 .catch(error => {
                     console.log(`加载计划明细时出错，加载流水号为：`, params.planSerialNo);
                 });
             if (callback !== undefined) 
                 return callback();
+        },
+        // 根据条件搜索相应的入库计划
+        searchStockInPlanByParams(params, callback){
+            const that = this;
+            that.$axios
+                .post(`http://localhost:8090/wareHouse/stockIn/searchStockInPlanByParams`, params)
+                .then(response => {
+
+                })
+                
+        },
+        // 搜集搜索条件
+        collectSearchOptions(){
+            let result = {};
+            const that = this;
+            for (let key in that.searchOptions.searchParams){
+                if (that.searchOptions.searchParams[key] !== "") {
+                    result[key] = that.searchOptions.searchParams[key];
+                }
+            }
+            // console.log(result);
+            return result;
         },
         // ------------------------------------ 业务函数 ------------------------------------
         // 通过paramsType和页码更新数据
@@ -432,18 +635,22 @@ export default {
                 that.getStockInPlanByPage(params);
             }
         },
+        // 点击本行的收货触发函数
         handlePlanTableReceiveFunction(row) {
             console.log(`row = `, row);
             console.log(`点击了本行的收货按钮`);
         },
-        handlePlanTableTestFunction(row) {
+        // 点击本行的检验触发函数
+        handlePlanTableTestFunction(row) {  
             console.log(`row = `, row);
             console.log(`点击了本行的检验按钮`);
         },
+        // 点击本行的入库触发函数
         handlePlanTableStockInFunction(row) {
             console.log(`row = `, row);
             console.log(`点击了本行的入库按钮`);
         },
+        // 点击表格显示明细
         handlePlanTableClick(row, event, column){
             const that = this;
             console.log(`row`, row);
@@ -452,8 +659,40 @@ export default {
                 let params = {
                     planSerialNo: row.planSerialNo
                 }
-                that.planDetails.hasPlanDetails = true;
+                that.getStockInPlanDetailByPlanSerialNo(params)
+                // that.planDetails.hasPlanDetails = true;
             }
+        },
+        // 当前页码改变时触发函数
+        handleCurrentChange(val) {
+            const that = this;
+            console.log(`页码改变，当前页为: ${val}`);
+            that.plans.pagination.currentPage = val
+            let params = {
+                page : that.plans.pagination.currentPage,
+                number : that.plans.pagination.pageSize,
+                entryType : parseInt(that.paramsType)
+            };
+            that.getStockInPlanByPage(params);
+        },
+        // 每页条数改变时触发函数
+        handleSizeChange(val) { 
+            const that = this;
+            console.log(`每页 ${val} 条`);
+            that.plans.pagination.pageSize = val;
+            let params = {
+                page : that.plans.pagination.currentPage,
+                number : that.plans.pagination.pageSize,
+                entryType : parseInt(that.paramsType)
+            };
+            that.getStockInPlanByPage(params);
+        },
+        // 搜索按键点击触发
+        handlePlanTableSearch() {
+            const that = this;
+            console.log(`搜索按钮点击`);
+            let params = that.collectSearchOptions();
+            console.log(params);
         }
     },
     // 监控paramsType的变化
@@ -462,7 +701,13 @@ export default {
                 const that = this;
                 console.log(`paramsType`, val);
                 if (val === that.preDefinedType) {
-                    that.updatePlanTableData();
+                    let params = {
+                        page : 1,
+                        number : that.plans.pagination.pageSize,
+                        entryType : parseInt(that.paramsType)
+                    }
+                    that.getAllStockInPlanByEntryType(params);
+                    that.getStockInPlanByPage(params);
                 }
             }
         }
