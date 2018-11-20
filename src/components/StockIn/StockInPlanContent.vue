@@ -348,7 +348,7 @@ export default {
                 ],
             },
             controlData: {
-                hasUpdated: false,
+                searchControl: false,
             },
         };
     },
@@ -372,6 +372,19 @@ export default {
     props: ['preDefinedType', 'paramsType'],
     methods: {
         // ------------------------------------ 工具函数 ------------------------------------
+        changeDate(date){
+            var y = date.getFullYear(); 
+            var m = date.getMonth() + 1; 
+            m = m < 10 ? ('0' + m) : m;  
+            var d = date.getDate();  
+            d = d < 10 ? ('0' + d) : d;  
+            var h = date.getHours();  
+            var minute = date.getMinutes();
+            minute = minute < 10 ? ('0' + minute) : minute; 
+            var second= date.getSeconds();
+            second = minute < 10 ? ('0' + second) : second;  
+            return y + '-' + m + '-' + d+' '+h+':'+minute+':'+ second;  
+        },
         // 根据入库类型获得所有的入库计划
         getAllStockInPlanByEntryType(params, callback){
             const that = this;
@@ -389,93 +402,6 @@ export default {
                 .catch(error => {
                     console.log(`加载出错，加载类别为` + that.paramsType, error);
                 });
-            if (callback !== undefined)
-                return callback();
-        },
-        // 根据页码获取所有的入库计划
-        getStockInPlanByPage(params, callback){
-            const that = this;
-            that.$axios
-                .post(`http://localhost:8090/wareHouse/stockIn/getStockInPlanByPage`, params)
-                .then(response => {
-                    // console.log(response);
-                    // let result = changeStockInPlan(response.data);
-                    var result = response.data;
-                    for (var i = 0; i < result.length; i++){
-                        var thisResult = result[i]
-                        if (thisResult.hasOwnProperty("entryType")){
-                            // console.log(`i = `+ i);
-                            var stockInType = "";
-                            if (parseInt(thisResult["entryType"]) == 1){
-                                stockInType = "采购入库";
-                                // console.log(stockInType);
-                            }
-                            if (parseInt(thisResult["entryType"]) == 2){
-                                stockInType = "委外加工入库";
-                            }
-                            if (parseInt(thisResult["entryType"]) == 3){
-                                stockInType = "生产入库";
-                            }
-                            if (parseInt(thisResult["entryType"]) == 4){
-                                stockInType = "销售退货";
-                            }
-                            if (parseInt(thisResult["entryType"]) == 5){
-                                stockInType = "生产退货";
-                            }
-                            if (parseInt(thisResult["entryType"]) == 6){
-                                stockInType = "其他入库";
-                            }
-                            result[i]["stockInType"] = stockInType;
-                            // console.log(result[i]["stockInType"]);
-                        }
-                        if (thisResult.hasOwnProperty("status")){
-                            var planStatus = "";
-                            if (parseInt(thisResult["status"]) == 0){
-                                planStatus = "未到货"
-                            }
-                            if (parseInt(thisResult["status"]) == 1){
-                                planStatus = "已收货"
-                            }
-                            if (parseInt(thisResult["status"]) == 2){
-                                planStatus = "已检验"
-                            }
-                            if (parseInt(thisResult["status"]) == 3){
-                                planStatus = "已入库"
-                            }
-                            result[i]["planStatus"] = planStatus;
-                        }
-                        if (thisResult.hasOwnProperty("deptId")){
-                            var dept = thisResult["deptId"];
-                            result[i]["dept"] = dept.toString();
-                        }
-                        if (thisResult.hasOwnProperty("onwerId")){
-                            var onwer = thisResult["onwerId"];
-                            result[i]["owner"] = onwer.toString();
-                        }
-                        if (thisResult.hasOwnProperty("deliveryId")){
-                            var delivery = thisResult["deliveryId"];
-                            result[i]["delivery"] = delivery.toString();
-                        }
-                        if (thisResult.hasOwnProperty("deliveryAddrId")){
-                            var deliveryAddr = thisResult["deliveryAddrId"];
-                            result[i]["deliveryAddr"] = deliveryAddr.toString();
-                        }
-                        if (thisResult.hasOwnProperty("warehouseId")){
-                            var warehouse = thisResult["warehouseId"];
-                            result[i]["warehouse"] = warehouse.toString();
-                        }
-                        if (thisResult.hasOwnProperty("receivingAddrId")){
-                            var receivingAddr = thisResult["receivingAddrId"];
-                            result[i]["receivingAddr"] = receivingAddr.toString();
-                        }
-                        if (thisResult.hasOwnProperty("operUserId")){
-                            var operUser = thisResult["operUserId"];
-                            result[i]["operUser"] = operUser.toString();
-                        }
-                    }
-                    that.plans.plans = result;
-                    // that.plans.plans = changeStockInPlan(result);
-                })
             if (callback !== undefined)
                 return callback();
         },
@@ -552,7 +478,20 @@ export default {
                     result[i]["operUser"] = operUser.toString();
                 }
             }
+            console.log(result);
             return result;
+        },
+        // 根据页码获取所有的入库计划
+        getStockInPlanByPage(params, callback){
+            const that = this;
+            that.$axios
+                .post(`http://localhost:8090/wareHouse/stockIn/getStockInPlanByPage`, params)
+                .then(response => {
+                    var result = response.data;
+                    that.plans.plans = that.changeStockInPlan(result);
+                })
+            if (callback !== undefined)
+                return callback();
         },
         // 根据入库计划流水号获取相应的入库计划明细
         getStockInPlanDetailByPlanSerialNo(params, callback){
@@ -592,25 +531,42 @@ export default {
                 return callback();
         },
         // 根据条件搜索相应的入库计划
-        searchStockInPlanByParams(params, callback){
-            const that = this;
-            that.$axios
-                .post(`http://localhost:8090/wareHouse/stockIn/searchStockInPlanByParams`, params)
-                .then(response => {
+        // searchStockInPlanByParams(params, callback){
+        //     const that = this;
+        //     that.$axios
+        //         .post(`http://localhost:8090/wareHouse/stockIn/searchStockInPlanByParams`, params)
+        //         .then(response => {
 
-                })
+        //         })
                 
-        },
+        // },
         // 搜集搜索条件
         collectSearchOptions(){
             let result = {};
             const that = this;
+            result["entryType"] = parseInt(that.paramsType);
             for (let key in that.searchOptions.searchParams){
                 if (that.searchOptions.searchParams[key] !== "") {
-                    result[key] = that.searchOptions.searchParams[key];
+                    if (key === "warehouse"){
+                        result["warehouseId"] = that.searchOptions.searchParams[key];
+                    }
+                    else if (key === "supplier"){
+                        result["deliveryId"] = that.searchOptions.searchParams[key];
+                    }
+                    else if (key === "dateRange"){
+                        var dateRange = that.searchOptions.searchParams[key];
+                        var DateStart = that.changeDate(dateRange[0]);
+                        result["DateStart"] = DateStart;
+                        var DateEnd = that.changeDate(dateRange[1]);
+                        result["DateEnd"] = DateEnd;
+                    }
+                    else {
+                        result[key] = that.searchOptions.searchParams[key];
+                    }
+                    
                 }
             }
-            // console.log(result);
+            console.log(result);
             return result;
         },
         // ------------------------------------ 业务函数 ------------------------------------
@@ -692,7 +648,6 @@ export default {
             const that = this;
             console.log(`搜索按钮点击`);
             let params = that.collectSearchOptions();
-            console.log(params);
         }
     },
     // 监控paramsType的变化
