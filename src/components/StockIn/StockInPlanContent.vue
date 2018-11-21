@@ -285,6 +285,7 @@ export default {
                     {
                         planSerialNo: "plan001",
                         stockInType: "采购入库",
+                        vouchType: 1,
                         vouchSerialNo: "pur001",
                         planStatus: "未到货",
                         dept: "部门1",
@@ -301,6 +302,7 @@ export default {
                     {
                         planSerialNo: "plan002",
                         stockInType: "采购入库",
+                        vouchType: 1,
                         vouchSerialNo: "pur002",
                         planStatus: "未到货",
                         dept: "部门2",
@@ -530,16 +532,47 @@ export default {
             if (callback !== undefined) 
                 return callback();
         },
+        // 显示搜索结果
+        showSearchResults(result, page, size){
+            // console.log(`按页数显示搜索结果`);
+            // console.log(result);
+            const that = this;
+            that.planDetails.hasPlanDetails = false;
+            var showResults = [];
+            var lenth = that.plans.pagination.total;
+            var startNum = (page - 1) * size;
+            var endNum = startNum + size;
+            console.log(endNum);
+            if (endNum > lenth){
+                endNum = lenth;
+            }
+            for (var i = startNum; i < endNum; i++){
+                showResults.push(result[i]);
+            }
+            that.plans.plans = that.changeStockInPlan(showResults);
+        },
         // 根据条件搜索相应的入库计划
-        // searchStockInPlanByParams(params, callback){
-        //     const that = this;
-        //     that.$axios
-        //         .post(`http://localhost:8090/wareHouse/stockIn/searchStockInPlanByParams`, params)
-        //         .then(response => {
-
-        //         })
+        searchStockInPlanByParams(params, callback){
+            const that = this;
+            that.controlData.searchControl = true;
+            var jsonLength = 0;
+            that.$axios
+                .post(`http://localhost:8090/wareHouse/stockIn/searchStockInPlanByParams`, params)
+                .then(response => {
+                    for (var item in response.data){
+                        jsonLength++;
+                    }
+                    that.plans.pagination.total = jsonLength;
+                    console.log(`总共搜索出`+ that.plans.pagination.total + `条数据`);
+                    that.plans.plansSearchResults = response.data;
+                    // that.plans.plans = response.data;
+                    console.log(that.plans.plansSearchResults);
+                    var page = that.plans.pagination.currentPage;
+                    var number = that.plans.pagination.pageSize;
+                    that.showSearchResults(that.plans.plansSearchResults, page, number);
+                })
                 
-        // },
+        },
         // 搜集搜索条件
         collectSearchOptions(){
             let result = {};
@@ -593,8 +626,24 @@ export default {
         },
         // 点击本行的收货触发函数
         handlePlanTableReceiveFunction(row) {
+            const that = this;
             console.log(`row = `, row);
             console.log(`点击了本行的收货按钮`);
+            this.$router.push({
+                path: `/StockIn/StockInReceive`,
+                query: {
+                    planSerialNo: row.planSerialNo,
+                    entryType: row.entryType,
+                    vouchType: row.vouchType,
+                    vouchSerialNo: row.vouchSerialNo,
+                    warehouseId: row.warehouseId,
+                    receivingAddrId: row.receivingAddrId,
+                    operUserId: row.operUserId,
+                    deliveryId: row.deliveryId,
+                    deliveryAddrId: row.deliveryAddrId,
+                    isFromPlan: true,
+                },
+            });
         },
         // 点击本行的检验触发函数
         handlePlanTableTestFunction(row) {  
@@ -624,30 +673,47 @@ export default {
             const that = this;
             console.log(`页码改变，当前页为: ${val}`);
             that.plans.pagination.currentPage = val
-            let params = {
-                page : that.plans.pagination.currentPage,
-                number : that.plans.pagination.pageSize,
-                entryType : parseInt(that.paramsType)
-            };
-            that.getStockInPlanByPage(params);
+            if (that.controlData.searchControl === false){
+                let params = {
+                    page : that.plans.pagination.currentPage,
+                    number : that.plans.pagination.pageSize,
+                    entryType : parseInt(that.paramsType)
+                };
+                console.log(`根据页码获取数据`);
+                that.getStockInPlanByPage(params);
+            }
+            else if (that.controlData.searchControl === true){
+                console.log(`根据页码获取搜索到的数据`);
+                var page = that.plans.pagination.currentPage;
+                var number = that.plans.pagination.pageSize;
+                that.showSearchResults(that.plans.plansSearchResults, page, number);
+            }
         },
         // 每页条数改变时触发函数
         handleSizeChange(val) { 
             const that = this;
             console.log(`每页 ${val} 条`);
             that.plans.pagination.pageSize = val;
-            let params = {
-                page : that.plans.pagination.currentPage,
-                number : that.plans.pagination.pageSize,
-                entryType : parseInt(that.paramsType)
-            };
-            that.getStockInPlanByPage(params);
+            if (that.controlData.searchControl == false){
+                let params = {
+                    page : that.plans.pagination.currentPage,
+                    number : that.plans.pagination.pageSize,
+                    entryType : parseInt(that.paramsType)
+                };
+                that.getStockInPlanByPage(params);
+            }
+            else if (that.controlData.searchControl == true){
+                var page = that.plans.pagination.currentPage;
+                var number = that.plans.pagination.pageSize;
+                that.showSearchResults(that.plans.plansSearchResults, page, number);
+            }
         },
         // 搜索按键点击触发
         handlePlanTableSearch() {
             const that = this;
             console.log(`搜索按钮点击`);
             let params = that.collectSearchOptions();
+            that.searchStockInPlanByParams(params);
         }
     },
     // 监控paramsType的变化
