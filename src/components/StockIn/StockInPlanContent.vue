@@ -454,30 +454,95 @@ export default {
                 if (thisResult.hasOwnProperty("deptId")){
                     var dept = thisResult["deptId"];
                     result[i]["dept"] = dept.toString();
+                    if (parseInt(thisResult["deptId"]) == 99901){
+                        dept = "发起部门1"
+                    }
+                    if (parseInt(thisResult["deptId"]) == 99902){
+                        dept = "发起部门2"
+                    }
+                    if (parseInt(thisResult["deptId"]) == 99903){
+                        dept = "发起部门3"
+                    }
+                    result[i]["dept"] = dept;
                 }
                 if (thisResult.hasOwnProperty("onwerId")){
                     var onwer = thisResult["onwerId"];
+                    // var onwer = '';
                     result[i]["owner"] = onwer.toString();
+                    if (parseInt(thisResult["onwerId"]) == 9901){
+                        onwer = "发起人1"
+                    }
+                    if (parseInt(thisResult["onwerId"]) == 9902){
+                        onwer = "发起人2"
+                    }
+                    if (parseInt(thisResult["onwerId"]) == 9903){
+                        onwer = "发起人3"
+                    }
+                    result[i]["onwer"] = onwer;
                 }
                 if (thisResult.hasOwnProperty("deliveryId")){
-                    var delivery = thisResult["deliveryId"];
+                    var delivery = '';
                     result[i]["delivery"] = delivery.toString();
+                    if (parseInt(thisResult["deliveryId"]) == 66601){
+                        delivery = "苏州供应商"
+                    }
+                    if (parseInt(thisResult["deliveryId"]) == 66602){
+                        delivery = "无锡供应商"
+                    }
+                    result[i]["delivery"] = delivery;
                 }
                 if (thisResult.hasOwnProperty("deliveryAddrId")){
-                    var deliveryAddr = thisResult["deliveryAddrId"];
+                    var deliveryAddr = '';
                     result[i]["deliveryAddr"] = deliveryAddr.toString();
+                    if (parseInt(thisResult["deliveryAddrId"]) == 666010){
+                        deliveryAddr = "苏州制造工厂"
+                    }
+                    if (parseInt(thisResult["deliveryAddrId"]) == 666020){
+                        deliveryAddr = "无锡制造工厂"
+                    }
+                    result[i]["deliveryAddr"] = deliveryAddr;
                 }
                 if (thisResult.hasOwnProperty("warehouseId")){
-                    var warehouse = thisResult["warehouseId"];
-                    result[i]["warehouse"] = warehouse.toString();
+                    var warehouse = '';
+                    // result[i]["warehouse"] = warehouse.toString();
+                    if (parseInt(thisResult["warehouseId"]) == 3331){
+                        warehouse = "仓库1"
+                    }
+                    if (parseInt(thisResult["warehouseId"]) == 3332){
+                        warehouse = "仓库2"
+                    }
+                    if (parseInt(thisResult["warehouseId"]) == 3333){
+                        warehouse = "仓库3"
+                    }
+                    result[i]["warehouse"] = warehouse;
                 }
                 if (thisResult.hasOwnProperty("receivingAddrId")){
                     var receivingAddr = thisResult["receivingAddrId"];
                     result[i]["receivingAddr"] = receivingAddr.toString();
+                    if (parseInt(thisResult["receivingAddrId"]) == 33100){
+                        receivingAddr = "接收地址1"
+                    }
+                    if (parseInt(thisResult["receivingAddrId"]) == 33200){
+                        receivingAddr = "接收地址2"
+                    }
+                    if (parseInt(thisResult["receivingAddrId"]) == 33300){
+                        receivingAddr = "接收地址3"
+                    }
+                    result[i]["receivingAddr"] = receivingAddr;
                 }
                 if (thisResult.hasOwnProperty("operUserId")){
                     var operUser = thisResult["operUserId"];
                     result[i]["operUser"] = operUser.toString();
+                    if (parseInt(thisResult["operUserId"]) == 3301){
+                        operUser = "收货人1"
+                    }
+                    if (parseInt(thisResult["operUserId"]) == 3302){
+                        operUser = "收货人2"
+                    }
+                    if (parseInt(thisResult["operUserId"]) == 3303){
+                        operUser = "收货人3"
+                    }
+                    result[i]["operUser"] = operUser;
                 }
             }
             console.log(result);

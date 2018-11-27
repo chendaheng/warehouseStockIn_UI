@@ -1,6 +1,6 @@
 <template>
   <div>
-    <el-card style="margin-bottom: 20px">
+    <el-card style="margin: 0 30px 20px 30px">
       <div class="searchOptions" style="padding-bottom: 10px">
         <el-row :gutter="10">
           <!-- 搜索输入部分 -->
@@ -61,7 +61,7 @@
         </el-row>
       </div>
     </el-card>
-    <el-card style="margin-bottom: 20px">
+    <el-card style="margin: 0 30px 20px 30px">
       <div class="tests">
         <div class="testTables" style="padding-bottom: 10px">
           <el-table
@@ -148,7 +148,7 @@
         </div>
       </div>
     </el-card>
-    <el-card style="margin-bottom: 20px" v-show="testDetails.hasTestDetails">
+    <el-card style="margin: 0 30px 20px 30px" v-show="testDetails.hasTestDetails">
       <div class="testDetails">
         <el-table
           :data=testDetails.testDetails
@@ -322,6 +322,10 @@ export default {
 
 
 <style lang="less" scoped>
+    .searchOptions {
+      margin: 20px 50px;
+      padding: 0 20px;
+    }
     .inputBox {
         display: flex;
         flex-direction: row;

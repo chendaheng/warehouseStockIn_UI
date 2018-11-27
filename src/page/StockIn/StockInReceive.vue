@@ -48,14 +48,28 @@
         </el-col>
         <el-col :span="6">
           <div class="bar">
-            <div class="title">接收地址</div>
-            <el-input v-model="receivingRecords.receivingRecordInputs.receivingAddr" clearable placeholder="请输入"></el-input>
+            <div class="title">收货地址</div>
+            <el-select v-model="receivingRecords.receivingRecordInputs.receivingAddr" clearable placeholder="请选择">
+              <el-option
+                v-for="item in receivingRecordOptions.receivingAddrOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="bar">
             <div class="title">收货人</div>
-            <el-input v-model="receivingRecords.receivingRecordInputs.operUser" clearable placeholder="请输入"></el-input>
+            <el-select v-model="receivingRecords.receivingRecordInputs.operUser" clearable placeholder="请选择">
+              <el-option
+                v-for="item in receivingRecordOptions.operUserOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
           </div>
         </el-col>
       </el-row>
@@ -76,13 +90,27 @@
         <el-col :span="6">
           <div class="bar">
             <div class="title">发货单位</div>
-            <el-input v-model="receivingRecords.receivingRecordInputs.delivery" clearable placeholder="请输入"></el-input>
+            <el-select v-model="receivingRecords.receivingRecordInputs.delivery" clearable placeholder="请选择">
+              <el-option
+                v-for="item in receivingRecordOptions.deliveryOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
           </div>
         </el-col>
         <el-col :span="6">
           <div class="bar">
             <div class="title">发货地址</div>
-            <el-input v-model="receivingRecords.receivingRecordInputs.deliveryAddr" clearable placeholder="请输入"></el-input>
+            <el-select v-model="receivingRecords.receivingRecordInputs.deliveryAddr" clearable placeholder="请选择">
+              <el-option
+                v-for="item in receivingRecordOptions.deliveryAddrOptions"
+                :key="item.value"
+                :label="item.label"
+                :value="item.value">
+              </el-option>
+            </el-select>
           </div>
         </el-col>  
         <el-col :span="6">
@@ -164,12 +192,64 @@ export default {
       receivingRecordOptions: {
         warehouseOptions:[
           {
-            value: 1,
+            value: 3331,
             label: "仓库1"
           },
           {
-            value: 2,
+            value: 3332,
             label: "仓库2"
+          },
+          {
+            value: 3333,
+            label: "仓库3"
+          }
+        ],
+        deliveryOptions:[
+          {
+            value: 66601,
+            label: "苏州供应商"
+          },
+          {
+            value: 66602,
+            label: "无锡供应商"
+          },
+        ],
+        deliveryAddrOptions:[
+          {
+            value: 666010,
+            label: "苏州制造工厂"
+          },
+          {
+            value: 666020,
+            label: "无锡制造工厂"
+          },
+        ],
+        receivingAddrOptions:[
+          {
+            value: 33100,
+            label: "接收地址1"
+          },
+          {
+            value: 33200,
+            label: "接收地址2"
+          },
+          {
+            value: 33300,
+            label: "接收地址3"
+          },
+        ],
+        operUserOptions:[
+          {
+            value: 3301,
+            label: "收货人1"
+          },
+          {
+            value: 3302,
+            label: "收货人2"
+          },
+          {
+            value: 3303,
+            label: "收货人3"
           }
         ],
         receivingStatusOptions:[
@@ -245,16 +325,16 @@ export default {
         that.receivingRecords.receivingRecordInputs.warehouse = parseInt(result["warehouseId"]);
       }
       if (key === "receivingAddrId"){
-        that.receivingRecords.receivingRecordInputs.receivingAddr = result["receivingAddrId"].toString();
+        that.receivingRecords.receivingRecordInputs.receivingAddr = result["receivingAddrId"]
       }
       if (key === "operUserId"){
-        that.receivingRecords.receivingRecordInputs.operUser = result["operUserId"].toString();
+        that.receivingRecords.receivingRecordInputs.operUser = result["operUserId"]
       }
       if (key === "deliveryId"){
-        that.receivingRecords.receivingRecordInputs.delivery = result["deliveryId"].toString();
+        that.receivingRecords.receivingRecordInputs.delivery = result["deliveryId"]
       }
       if (key === "deliveryAddrId"){
-        that.receivingRecords.receivingRecordInputs.deliveryAddr = result["deliveryAddrId"].toString();
+        that.receivingRecords.receivingRecordInputs.deliveryAddr = result["deliveryAddrId"]
       }
     }
     console.log(result);
