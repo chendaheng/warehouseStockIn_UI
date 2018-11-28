@@ -478,7 +478,7 @@ export default {
                     if (parseInt(thisResult["onwerId"]) == 9903){
                         onwer = "发起人3"
                     }
-                    result[i]["onwer"] = onwer;
+                    result[i]["owner"] = onwer;
                 }
                 if (thisResult.hasOwnProperty("deliveryId")){
                     var delivery = '';
@@ -583,12 +583,12 @@ export default {
                             result[i]["stockInNum"] = stockInNum.toString();
                         }
                         if (thisResult.hasOwnProperty("price")){
-                            var singlePrice = thisResult["planQuantity"];
+                            var singlePrice = thisResult["price"];
                             result[i]["singlePrice"] = singlePrice.toString();
                         }
                     }
                     that.planDetails.hasPlanDetails = true;
-                    that.planDetails.planDetails = response.data;
+                    that.planDetails.planDetails = result;
                     console.log(`加载计划明细成功，加载流水号为：`, params.planSerialNo);
                 })
                 .catch(error => {

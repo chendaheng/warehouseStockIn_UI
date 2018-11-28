@@ -131,24 +131,28 @@
           <el-button type="text">查看原始单据</el-button>
         </el-col>
         <el-col :span="6">
-          <el-button type="primary">确认收货</el-button>
+          <el-button type="primary" @click="receiveClick()">确认收货</el-button>
         </el-col>
       </el-row>
     </el-card>
     <el-card class="box-card">
       <el-table
-        :data="tableData"
+        :data="receivingRecords.receivingRecordDetails"
         max-height="400"
         border
         :stripe="true"
         :highlight-current-row="true"
         style="width: 100%; text-align: center">
         <el-table-column label="序号" width="50" type="index" align="center"></el-table-column>
-        <el-table-column prop="code" label="物料编码" align="center"></el-table-column>
-        <el-table-column prop="specification" label="规格" align="center"></el-table-column>
+        <el-table-column prop="materialCode" label="物料编码" align="center"></el-table-column>
+        <el-table-column prop="format" label="规格" align="center"></el-table-column>
         <el-table-column prop="unit" label="计量单位" align="center"></el-table-column>
-        <el-table-column prop="planquantity" label="计划到货数量" align="center"></el-table-column>
-        <el-table-column prop="quantity" label="到货数量" align="center"></el-table-column>
+        <el-table-column prop="planQuantity" label="计划到货数量" align="center"></el-table-column>
+        <el-table-column prop="receivingQuantity" label="到货数量" align="center">
+          <template slot-scope="scope">
+            <el-input v-model="receivingRecords.receivingRecordDetails[scope.$index]['receivingQuantity']"></el-input>
+          </template>
+        </el-table-column>
         <el-table-column prop="account" label="到货总金额" align="center"></el-table-column>
         <el-table-column prop="note" label="备注" align="center"></el-table-column>
       </el-table>
@@ -175,6 +179,7 @@ export default {
           planSerialNo: "",
           vouchType: "",
           vouchSerialNo: "",
+          entryType:"",
           receivingDate: "",
           warehouse: "",
           receivingAddr: "",
@@ -185,9 +190,33 @@ export default {
           attachmentId: "",
           note: "",
         },
-        receivingRecordDetails :{
-
-        }
+        receivingRecordDetails :[
+          {
+            materialCode: "10001",
+            format: "规格1",
+            unit: "米",
+            planQuantity: "100",
+            receivingQuantity: "0",
+            singlePrice: "100",
+            account: "0",
+            note: "备注1",
+          },
+          {
+            materialCode: "10002",
+            format: "规格2",
+            unit: "米",
+            planQuantity: "200",
+            receivingQuantity: "0",
+            singlePrice: "200",
+            account: "0",
+            note: "备注2",
+          }
+        ]
+      },
+      controlData:{
+        receivingCount: 1,
+        isAddreceivingRecord: false,
+        isAddreceivingRecordDetail: false,
       },
       receivingRecordOptions: {
         warehouseOptions:[
@@ -297,18 +326,18 @@ export default {
           }
         ]
       },
-      
-      // inputs: ['', '', '','','','','',''],
-      // selects: ['','','','','',''],
-      // options:[
-      //   [{
-      //     value: "选项1",
-      //     label: "黄金"
-      //   }],
-      //   [],
-      //   [],
-      // ],
-      tableData: []
+      // tableData: [
+      //   {
+      //     materialCode: "10001",
+      //     format: "规格1",
+      //     unit: "米",
+      //     planQuantity: "100",
+      //     receivingQuantity: "0",
+      //     singlePrice: "100",
+      //     account: "0",
+      //     note: "备注1",
+      //   }
+      // ]
     };
   },
   created: function (){
@@ -317,7 +346,8 @@ export default {
     var result = {};
     result = that.$route.query;
     that.receivingRecords.receivingRecordInputs = result;
-    
+    that.controlData.isAddreceivingRecord = false;
+    that.controlData.isAddreceivingRecordDetail = false;
     
     var i = 0;
     for (let key in that.receivingRecords.receivingRecordInputs){
@@ -339,6 +369,140 @@ export default {
     }
     console.log(result);
     console.log(that.receivingRecords.receivingRecordInputs);
+    let params = {
+      planSerialNo: result["planSerialNo"]
+    }
+    that.getStockInPlanDetailByPlanSerialNo(params);
+
+  },
+  methods: {
+    // ------------------------------------ 工具函数 ------------------------------------
+    changeDate(date){
+      var y = date.getFullYear(); 
+      var m = date.getMonth() + 1; 
+      m = m < 10 ? ('0' + m) : m;  
+      var d = date.getDate();  
+      d = d < 10 ? ('0' + d) : d;  
+      var h = date.getHours();  
+      var minute = date.getMinutes();
+      minute = minute < 10 ? ('0' + minute) : minute; 
+      var second= date.getSeconds();
+      second = minute < 10 ? ('0' + second) : second;  
+      return y + '-' + m + '-' + d+' '+h+':'+minute+':'+ second;  
+    },
+    // 根据入库计划流水号获取相应的入库计划明细
+    getStockInPlanDetailByPlanSerialNo(params, callback){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/getStockInPlanDetailByPlanSerialNo`, params)
+        .then(response => {
+          var result = response.data;
+          for (var i = 0; i < result.length; i++){
+            var thisResult = result[i];
+            if (thisResult.hasOwnProperty("specification")){
+              var format = thisResult["specification"];
+              result[i]["format"] = format.toString();
+            }
+            if (thisResult.hasOwnProperty("unitId")){
+              var unit = thisResult["unitId"];
+              result[i]["unit"] = "计量单位" + unit.toString();
+            }
+            if (thisResult.hasOwnProperty("planQuantity")){
+              var stockInNum = thisResult["planQuantity"];
+              result[i]["planQuantity"] = stockInNum.toString();
+            }
+            if (thisResult.hasOwnProperty("price")){
+              var singlePrice = thisResult["price"];
+              result[i]["singlePrice"] = singlePrice.toString();
+            }
+          }
+          that.receivingRecords.receivingRecordDetails = result;
+          console.log(`加载明细成功，加载流水号为：`, params.planSerialNo);
+        })
+        .catch(error => {
+            console.log(`加载明细时出错，加载流水号为：`, params.planSerialNo);
+        });
+    if (callback !== undefined) 
+        return callback();
+    },  
+    // 新增收货记录
+    addReceivingRecord(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/addReceivingRecord`, params)
+        .then(response => {
+          // console.log(response.data);
+          console.log(`成功新增`+ (response.data).toString() +`条收货记录`);
+          that.controlData.isAddreceivingRecord = true;
+        })
+        .catch(error => {
+          console.log(`新增收货记录失败`);
+        });
+    },
+    // 新增收货记录明细
+    addReceivingRecordDetail(params){
+      const that = this;
+      var newParams = {};
+      if(params.length == 1) {
+        console.log("params长度: " + params.length);
+        params["planSerialNo"] = that.receivingRecords.receivingRecordInputs.planSerialNo;
+        params["receivingSerialNo"] = "receive" + (that.controlData.receivingCount).toString();
+        let newParams = params;
+      }
+      if(params.length > 1){
+        console.log("params长度: " + params.length);
+        for (var i = 0; i < params.length; i++){
+          params[i]["planSerialNo"] = that.receivingRecords.receivingRecordInputs.planSerialNo;
+        }
+        let newParams = {
+          data : params,
+        }
+      }
+      
+      console.log(params);
+      console.log("newParams");
+      console.log(newParams);
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/addReceivingRecordDetail`, newParams)
+        .then(response => {
+          console.log(`成功新增`+ (response.data).toString() +`条收货记录明细`);
+        })
+        .catch(error => {
+          console.log(`新增收货记录明细失败`);
+        });
+      
+    },
+    
+    // ------------------------------------ 业务函数 ------------------------------------
+    // 点击确认收货 
+    receiveClick(){
+      const that = this;
+      console.log(`确认收货按钮点击`);
+      var date = that.changeDate(that.receivingRecords.receivingRecordInputs.receivingDate);
+      let params = {
+        receivingSerialNo: "receive" + (that.controlData.receivingCount).toString(),
+        planSerialNo: that.receivingRecords.receivingRecordInputs.planSerialNo,
+        vouchSerialNo: that.receivingRecords.receivingRecordInputs.vouchSerialNo,
+        vouchType: that.receivingRecords.receivingRecordInputs.vouchType,
+        entryType: that.receivingRecords.receivingRecordInputs.entryType,
+        deliveryId: that.receivingRecords.receivingRecordInputs.delivery,
+        deliveryAddrId: that.receivingRecords.receivingRecordInputs.deliveryAddr,
+        receivingDate: date,
+        warehouseId: that.receivingRecords.receivingRecordInputs.warehouse,
+        receivingAddrId: that.receivingRecords.receivingRecordInputs.receivingAddr,
+        operUserId: that.receivingRecords.receivingRecordInputs.operUser, 
+        receivingStatus: that.receivingRecords.receivingRecordInputs.receivingStatus,
+        attachmentId: that.receivingRecords.receivingRecordInputs.attachmentId,
+        note: that.receivingRecords.receivingRecordInputs.note,    
+      }
+      console.log(params);
+      that.addReceivingRecord(params);
+      that.addReceivingRecordDetail(that.receivingRecords.receivingRecordDetails);
+      if (that.controlData.isAddreceivingRecord = true){
+        that.controlData.receivingCount += 1;
+      }
+      
+    }
   }
   
 }
