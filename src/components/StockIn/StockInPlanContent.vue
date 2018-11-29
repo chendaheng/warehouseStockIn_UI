@@ -260,22 +260,26 @@ export default {
                 options: {
                     warehouseOptions: [
                         {
-                            value: 1,
+                            value: 3331,
                             label: "仓库1"
                         },
                         {
-                            value: 2,
+                            value: 3332,
                             label: "仓库2"
+                        },
+                        {
+                            value: 3333,
+                            label: "仓库3"
                         },
                     ],
                     supplierOptions: [
                         {
-                            value: 1,
-                            label: "供应商1"
+                            value: 66601,
+                            label: "苏州供应商"
                         },
                         {
-                            value: 2,
-                            label: "供应商2"
+                            value: 66602,
+                            label: "无锡供应商"
                         }
                     ],
                 },

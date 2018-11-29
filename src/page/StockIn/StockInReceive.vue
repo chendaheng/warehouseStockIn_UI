@@ -154,7 +154,11 @@
           </template>
         </el-table-column>
         <el-table-column prop="account" label="到货总金额" align="center"></el-table-column>
-        <el-table-column prop="note" label="备注" align="center"></el-table-column>
+        <el-table-column prop="note" label="备注" align="center">
+          <template slot-scope="scope">
+            <el-input v-model="receivingRecords.receivingRecordDetails[scope.$index]['note']"></el-input>
+          </template>
+        </el-table-column>
       </el-table>
     </el-card>
   </div>
@@ -214,7 +218,8 @@ export default {
         ]
       },
       controlData:{
-        receivingCount: 1,
+        receivingCount: 0,
+        qualityTestCount: 0,
         isAddreceivingRecord: false,
         isAddreceivingRecordDetail: false,
       },
@@ -342,13 +347,15 @@ export default {
   },
   created: function (){
     const that = this;
+    console.log("进入收货画面")
     console.log(`route` + that.$route);
     var result = {};
     result = that.$route.query;
     that.receivingRecords.receivingRecordInputs = result;
     that.controlData.isAddreceivingRecord = false;
     that.controlData.isAddreceivingRecordDetail = false;
-    
+    that.getLastReceivingRecord();
+    that.getLastQualityTestRecordId();
     var i = 0;
     for (let key in that.receivingRecords.receivingRecordInputs){
       if (key === "warehouseId"){
@@ -368,6 +375,7 @@ export default {
       }
     }
     console.log(result);
+    console.log("receivingRecordInputs");
     console.log(that.receivingRecords.receivingRecordInputs);
     let params = {
       planSerialNo: result["planSerialNo"]
@@ -399,6 +407,7 @@ export default {
           var result = response.data;
           for (var i = 0; i < result.length; i++){
             var thisResult = result[i];
+            result[i]["note"] = "";
             if (thisResult.hasOwnProperty("specification")){
               var format = thisResult["specification"];
               result[i]["format"] = format.toString();
@@ -425,6 +434,36 @@ export default {
     if (callback !== undefined) 
         return callback();
     },  
+    // 获取最后一条收货记录的id
+    getLastReceivingRecord(){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/getLastReceivingRecordId`)
+        .then(response => {
+          // console.log(response.data);
+          that.controlData.receivingCount = parseInt(response.data) + 1;
+          console.log("receivingCount:" + that.controlData.receivingCount);
+          console.log(`获取最后一条收货记录的id成功`);
+        })
+        .catch(error => {
+          console.log(`获取最后一条收货记录的id失败`);
+        });
+    },
+    // 获取最后一条检验记录的id
+    getLastQualityTestRecordId(){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/getLastQualityTestRecordId`)
+        .then(response => {
+          // console.log(response.data);
+          that.controlData.qualityTestCount = parseInt(response.data) + 1;
+          console.log("qualityTestCount:" + that.controlData.qualityTestCount);
+          console.log(`获取最后一条检验记录的id成功`);
+        })
+        .catch(error => {
+          console.log(`获取最后一条检验记录的id失败`);
+        });
+    },
     // 新增收货记录
     addReceivingRecord(params){
       const that = this;
@@ -433,75 +472,121 @@ export default {
         .then(response => {
           // console.log(response.data);
           console.log(`成功新增`+ (response.data).toString() +`条收货记录`);
-          that.controlData.isAddreceivingRecord = true;
         })
         .catch(error => {
           console.log(`新增收货记录失败`);
         });
+        that.controlData.isAddreceivingRecord = true;
+        console.log(that.controlData.isAddreceivingRecord);
     },
     // 新增收货记录明细
     addReceivingRecordDetail(params){
       const that = this;
-      var newParams = {};
-      if(params.length == 1) {
-        console.log("params长度: " + params.length);
-        params["planSerialNo"] = that.receivingRecords.receivingRecordInputs.planSerialNo;
-        params["receivingSerialNo"] = "receive" + (that.controlData.receivingCount).toString();
-        let newParams = params;
-      }
-      if(params.length > 1){
-        console.log("params长度: " + params.length);
-        for (var i = 0; i < params.length; i++){
-          params[i]["planSerialNo"] = that.receivingRecords.receivingRecordInputs.planSerialNo;
-        }
-        let newParams = {
-          data : params,
-        }
-      }
-      
-      console.log(params);
-      console.log("newParams");
-      console.log(newParams);
       that.$axios
-        .post(`http://localhost:8090/wareHouse/stockIn/addReceivingRecordDetail`, newParams)
+        .post(`http://localhost:8090/wareHouse/stockIn/addReceivingRecordDetail`, params)
         .then(response => {
-          console.log(`成功新增`+ (response.data).toString() +`条收货记录明细`);
+          if(response.data == -1){
+            console.log(`新增收货记录明细失败`);
+          }
+          else{
+            console.log(`成功新增`+ (response.data).toString() +`条收货记录明细`);
+            that.controlData.isAddreceivingRecordDetail = true;
+          }
         })
         .catch(error => {
           console.log(`新增收货记录明细失败`);
         });
-      
     },
-    
+    // 新增检验记录
+    addQualityTestRecord(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/addQualityTestRecord`, params)
+        .then(response => {
+          if(response.data == -1){
+            console.log(`新增检验记录失败`);
+          }
+          else{
+            console.log(`成功新增`+ (response.data).toString() +`条检验记录`);
+          }
+        })
+        .catch(error => {
+          console.log(`新增检验记录失败`);
+        });
+    },
     // ------------------------------------ 业务函数 ------------------------------------
     // 点击确认收货 
     receiveClick(){
       const that = this;
       console.log(`确认收货按钮点击`);
-      var date = that.changeDate(that.receivingRecords.receivingRecordInputs.receivingDate);
-      let params = {
+      var receivingRecordsData = that.receivingRecords.receivingRecordInputs;
+      var date = that.changeDate(receivingRecordsData.receivingDate);
+      // 新增收货记录
+      let receivingRecordParams = {
         receivingSerialNo: "receive" + (that.controlData.receivingCount).toString(),
-        planSerialNo: that.receivingRecords.receivingRecordInputs.planSerialNo,
-        vouchSerialNo: that.receivingRecords.receivingRecordInputs.vouchSerialNo,
-        vouchType: that.receivingRecords.receivingRecordInputs.vouchType,
-        entryType: that.receivingRecords.receivingRecordInputs.entryType,
-        deliveryId: that.receivingRecords.receivingRecordInputs.delivery,
-        deliveryAddrId: that.receivingRecords.receivingRecordInputs.deliveryAddr,
+        planSerialNo: receivingRecordsData.planSerialNo,
+        vouchSerialNo: receivingRecordsData.vouchSerialNo,
+        vouchType: receivingRecordsData.vouchType,
+        entryType: receivingRecordsData.entryType,
+        deliveryId: receivingRecordsData.delivery,
+        deliveryAddrId: receivingRecordsData.deliveryAddr,
         receivingDate: date,
-        warehouseId: that.receivingRecords.receivingRecordInputs.warehouse,
-        receivingAddrId: that.receivingRecords.receivingRecordInputs.receivingAddr,
-        operUserId: that.receivingRecords.receivingRecordInputs.operUser, 
-        receivingStatus: that.receivingRecords.receivingRecordInputs.receivingStatus,
-        attachmentId: that.receivingRecords.receivingRecordInputs.attachmentId,
-        note: that.receivingRecords.receivingRecordInputs.note,    
+        warehouseId: receivingRecordsData.warehouse,
+        receivingAddrId: receivingRecordsData.receivingAddr,
+        operUserId: receivingRecordsData.operUser, 
+        receivingStatus: receivingRecordsData.receivingStatus,
+        attachmentId: receivingRecordsData.attachmentId,
+        note: receivingRecordsData.note,    
       }
-      console.log(params);
-      that.addReceivingRecord(params);
-      that.addReceivingRecordDetail(that.receivingRecords.receivingRecordDetails);
+      console.log("收货记录params");
+      console.log(receivingRecordParams);
+      that.addReceivingRecord(receivingRecordParams);
+      // console.log(that.controlData.isAddreceivingRecord);
+      // that.controlData.isAddreceivingRecord = true;
+
+      // 新增检验记录
+      if(that.controlData.isAddreceivingRecord == true){
+        let qualityTestRecordParams = {
+          qualityTestSerialNo: "test" + (that.controlData.qualityTestCount).toString(),
+          receivingSerialNo: "receive" + (that.controlData.receivingCount).toString(),
+        }
+        console.log("检验记录params");
+        console.log(qualityTestRecordParams);
+        that.addQualityTestRecord(qualityTestRecordParams);
+      }
+
+      // 新增收货记录明细
+      console.log("需要新增" + that.receivingRecords.receivingRecordDetails.length + "条收货记录明细");
+      for (var i = 0; i < that.receivingRecords.receivingRecordDetails.length; i++){
+        var result = that.receivingRecords.receivingRecordDetails[i];
+        that.controlData.isAddreceivingRecordDetail = false;
+        // result["note"] = '';
+        let receivingRecordDetailsParams = {
+          receivingSerialNo: "receive" + (that.controlData.receivingCount).toString(),
+          planSerialNo: that.receivingRecords.receivingRecordInputs.planSerialNo,
+          materialCode: result.materialCode,
+          unitId: parseInt(result.unitId),
+          receivingQuantity: parseInt(result.receivingQuantity),
+          note: result.note,
+        }
+        console.log("receivingRecordDetailsParams");
+        console.log(receivingRecordDetailsParams);
+        that.addReceivingRecordDetail(receivingRecordDetailsParams);
+
+        // // 新增检验记录明细
+        // if(that.controlData.isAddreceivingRecordDetail = true){
+        //   let receivingRecordDetailParams = {
+        //     qualityTestSerialNo: "test" + (that.controlData.qualityTestCount).toString(),
+        //     receivingSerialNo: "receive" + (that.controlData.receivingCount).toString(),
+        //     materialCode: result.materialCode,
+        //     unitId: parseInt(result.unitId),
+        //   }
+        // }
+      }     
       if (that.controlData.isAddreceivingRecord = true){
         that.controlData.receivingCount += 1;
+        console.log(that.controlData.receivingCount);
       }
-      
     }
   }
   
