@@ -144,10 +144,31 @@
         <el-table-column prop="code" label="商品编号" align="center"></el-table-column>
         <el-table-column prop="name" label="商品名称" align="center"></el-table-column>
         <el-table-column prop="specification" label="规格" align="center"></el-table-column>
-        <el-table-column prop="unit" label="计量单位" align="center"></el-table-column>
-        <el-table-column prop="batch" label="批号" align="center"></el-table-column>
-        <el-table-column prop="number" label="入库数量" align="center"></el-table-column>
-        <el-table-column prop="price" label="单价" align="center"></el-table-column>
+        <el-table-column prop="unit" label="计量单位" align="center">
+          <template slot-scope="scope">
+            <el-select v-model="scope.row.unit">
+              <el-option label="米" value="1"></el-option>
+              <el-option label="分米" value="2"></el-option>
+              <el-option label="厘米" value="3"></el-option>
+              <el-option label="毫米" value="4"></el-option>
+            </el-select>
+          </template>
+        </el-table-column>
+        <el-table-column prop="batch" label="批号" align="center">
+          <template slot-scope="scope">
+            <el-input v-model="scope.row.batch"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column prop="number" label="入库数量" align="center">
+          <template slot-scope="scope">
+            <el-input v-model="scope.row.number"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column prop="price" label="单价" align="center">
+          <template slot-scope="scope">
+            <el-input v-model="scope.row.price"></el-input>
+          </template>          
+        </el-table-column>
         <el-table-column prop="ammount" label="金额" align="center"></el-table-column>
         <el-table-column prop="ticket" label="开票" align="center"></el-table-column>
         <el-table-column prop="tax" label="税率" align="center"></el-table-column>
@@ -185,7 +206,21 @@ export default {
       barCode: '',
       ammount: 10000,
       taxammount:10500,
-      warehouseStockInRecordDetail: [],
+      warehouseStockInRecordDetail: [{
+        code: '',
+        name: '',
+        specification: '',
+        unit: '',
+        batch: '',
+        number: '',
+        price: '',
+        ammount: '',
+        ticket: '',
+        tax: '',
+        taxprice: '',
+        taxammount: '',
+        note: '',
+      }],
     }
   }
   

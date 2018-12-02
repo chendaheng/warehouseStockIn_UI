@@ -133,15 +133,27 @@
         <el-table-column prop="code" label="商品编号" align="center"></el-table-column>
         <el-table-column prop="name" label="商品名称" align="center"></el-table-column>
         <el-table-column prop="specification" label="规格" align="center"></el-table-column>
-        <el-table-column prop="unit" label="计量单位" align="center"></el-table-column>
-        <el-table-column prop="batch" label="批号" align="center"></el-table-column>
-        <el-table-column prop="number" label="入库数量" align="center"></el-table-column>
-        <el-table-column prop="price" label="单价" align="center"></el-table-column>
+        <el-table-column prop="unit" label="计量单位" align="center">
+          <template slot-scope="scope">
+            <el-input v-model="scope.row.unit"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column prop="batch" label="批号" align="center">
+          <template slot-scope="scope">
+            <el-input v-model="scope.row.batch"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column prop="number" label="入库数量" align="center">
+          <template slot-scope="scope">
+            <el-input v-model="scope.row.number"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column prop="price" label="单价" align="center">
+          <template slot-scope="scope">
+            <el-input v-model="scope.row.price"></el-input>
+          </template>
+        </el-table-column>
         <el-table-column prop="ammount" label="金额" align="center"></el-table-column>
-        <!-- <el-table-column prop="ticket" label="开票" align="center"></el-table-column>
-        <el-table-column prop="tax" label="税率" align="center"></el-table-column>
-        <el-table-column prop="taxprice" label="含税单价" align="center"></el-table-column>
-        <el-table-column prop="taxammount" label="含税金额" align="center"></el-table-column> -->
         <el-table-column prop="note" label="备注" align="center"></el-table-column>
       </el-table>
     </el-card>
@@ -173,7 +185,16 @@ export default {
       },
       barCode: '',
       ammount: 10000,
-      warehouseStockInOtherDetail: [],
+      warehouseStockInOtherDetail: [{
+        code: '',
+        name: '',
+        specification: '',
+        unit: '',
+        batch: '',
+        number: '',
+        price: '',
+        ammount: '',
+      }],
     }
   }
   
