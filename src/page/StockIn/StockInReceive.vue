@@ -16,7 +16,7 @@
           <el-input v-model="receivingRecords.receivingRecordInputs.vouchSerialNo" clearable placeholder="请输入关联单号"></el-input>
         </el-col>
         <el-col :span="2">
-          <el-button type="primary">搜索</el-button>
+          <el-button type="primary" @click="handleVouchSerialNoSearch()">搜索</el-button>
         </el-col>
       </el-row>
     </el-card>
@@ -174,8 +174,7 @@ export default {
             vouchType: "",
             vouchSerialNo: "",
           },
-          options: {
-            
+          options: { 
           },
       },
       receivingRecords:{
@@ -195,26 +194,26 @@ export default {
           note: "",
         },
         receivingRecordDetails :[
-          {
-            materialCode: "10001",
-            format: "规格1",
-            unit: "米",
-            planQuantity: "100",
-            receivingQuantity: "0",
-            singlePrice: "100",
-            account: "0",
-            note: "备注1",
-          },
-          {
-            materialCode: "10002",
-            format: "规格2",
-            unit: "米",
-            planQuantity: "200",
-            receivingQuantity: "0",
-            singlePrice: "200",
-            account: "0",
-            note: "备注2",
-          }
+          // {
+          //   materialCode: "10001",
+          //   format: "规格1",
+          //   unit: "米",
+          //   planQuantity: "100",
+          //   receivingQuantity: "0",
+          //   singlePrice: "100",
+          //   account: "0",
+          //   note: "备注1",
+          // },
+          // {
+          //   materialCode: "10002",
+          //   format: "规格2",
+          //   unit: "米",
+          //   planQuantity: "200",
+          //   receivingQuantity: "0",
+          //   singlePrice: "200",
+          //   account: "0",
+          //   note: "备注2",
+          // }
         ]
       },
       controlData:{
@@ -222,6 +221,7 @@ export default {
         qualityTestCount: 0,
         isAddreceivingRecord: false,
         isAddreceivingRecordDetail: false,
+        isFromPlan :false,
       },
       receivingRecordOptions: {
         warehouseOptions:[
@@ -349,39 +349,49 @@ export default {
     const that = this;
     console.log("进入收货画面")
     console.log(`route` + that.$route);
+    that.controlData.isFromPlan = false;
     var result = {};
     result = that.$route.query;
-    that.receivingRecords.receivingRecordInputs = result;
+    if (result != null){
+      that.controlData.isFromPlan = result["isFromPlan"];
+    }
+    console.log(`控制数据为` + that.controlData.isFromPlan);
     that.controlData.isAddreceivingRecord = false;
     that.controlData.isAddreceivingRecordDetail = false;
     that.getLastReceivingRecord();
     that.getLastQualityTestRecordId();
-    var i = 0;
-    for (let key in that.receivingRecords.receivingRecordInputs){
-      if (key === "warehouseId"){
-        that.receivingRecords.receivingRecordInputs.warehouse = parseInt(result["warehouseId"]);
+    if(that.controlData.isFromPlan == true){
+      console.log("数据从计划页面读取");
+      that.receivingRecords.receivingRecordInputs = result;
+      var i = 0;
+      for (let key in that.receivingRecords.receivingRecordInputs){
+        if (key === "warehouseId"){
+          that.receivingRecords.receivingRecordInputs.warehouse = parseInt(result["warehouseId"]);
+        }
+        if (key === "receivingAddrId"){
+          that.receivingRecords.receivingRecordInputs.receivingAddr = result["receivingAddrId"]
+        }
+        if (key === "operUserId"){
+          that.receivingRecords.receivingRecordInputs.operUser = result["operUserId"]
+        }
+        if (key === "deliveryId"){
+          that.receivingRecords.receivingRecordInputs.delivery = result["deliveryId"]
+        }
+        if (key === "deliveryAddrId"){
+          that.receivingRecords.receivingRecordInputs.deliveryAddr = result["deliveryAddrId"]
+        }
       }
-      if (key === "receivingAddrId"){
-        that.receivingRecords.receivingRecordInputs.receivingAddr = result["receivingAddrId"]
+      console.log(result);
+      console.log("receivingRecordInputs");
+      console.log(that.receivingRecords.receivingRecordInputs);
+      let params = {
+        planSerialNo: result["planSerialNo"]
       }
-      if (key === "operUserId"){
-        that.receivingRecords.receivingRecordInputs.operUser = result["operUserId"]
-      }
-      if (key === "deliveryId"){
-        that.receivingRecords.receivingRecordInputs.delivery = result["deliveryId"]
-      }
-      if (key === "deliveryAddrId"){
-        that.receivingRecords.receivingRecordInputs.deliveryAddr = result["deliveryAddrId"]
-      }
+      that.getStockInPlanDetailByPlanSerialNo(params);
     }
-    console.log(result);
-    console.log("receivingRecordInputs");
-    console.log(that.receivingRecords.receivingRecordInputs);
-    let params = {
-      planSerialNo: result["planSerialNo"]
+    else if(that.controlData.isFromPlan == false){
+      console.log(`收货页面被单独使用，请进行搜索`);
     }
-    that.getStockInPlanDetailByPlanSerialNo(params);
-
   },
   methods: {
     // ------------------------------------ 工具函数 ------------------------------------
@@ -514,7 +524,76 @@ export default {
           console.log(`新增检验记录失败`);
         });
     },
+    // 新增检验记录明细
+    addQualityTestRecordDetail(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/addQualityTestRecordDetail`, params)
+        .then(response => {
+          if(response.data == -1){
+            console.log(`新增检验记录明细失败`);
+          }
+          else{
+            console.log(`成功新增`+ (response.data).toString() +`条检验记录明细`);
+          }
+        })
+        .catch(error => {
+          console.log(`新增检验记录明细失败`);
+        });
+    },
+    // 更新入库计划
+    updateStockInPlanByParams(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/updateStockInPlanByParams`, params)
+        .then(response => {
+          console.log(`成功更新`+ (response.data).toString() +`条入库计划`);
+          
+        })
+        .catch(error => {
+          console.log(`更新入库计划失败`);
+        });
+    },
+    // 搜集搜索条件
+    collectSearchOptions(){
+      let result = {};
+      const that = this;
+      if(that.receivingRecords.receivingRecordInputs["vouchType"]!== ""){
+        result["vouchType"] = that.receivingRecords.receivingRecordInputs["vouchType"];
+      }
+      if(that.receivingRecords.receivingRecordInputs["vouchSerialNo"]!== ""){
+        result["vouchSerialNo"] = that.receivingRecords.receivingRecordInputs["vouchSerialNo"];
+      }
+      console.log("成功搜集搜索条件");
+      console.log(result);
+      return result;
+    },
     // ------------------------------------ 业务函数 ------------------------------------
+    // 点击搜索
+    handleVouchSerialNoSearch(){
+      const that = this;
+      let params = that.collectSearchOptions();
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/searchStockInPlanByParams`, params)
+        .then(response => {
+          console.log(response.data[0]);
+          // that.receivingRecords.receivingRecordInputs = response.data[0];
+          that.receivingRecords.receivingRecordInputs.planSerialNo = response.data[0]["planSerialNo"];
+          that.receivingRecords.receivingRecordInputs.vouchType = response.data[0]["vouchType"];
+          that.receivingRecords.receivingRecordInputs.vouchSerialNo = response.data[0]["vouchSerialNo"];
+          that.receivingRecords.receivingRecordInputs.entryType = response.data[0]["entryType"];
+          that.receivingRecords.receivingRecordInputs.warehouse = response.data[0]["warehouseId"];
+          that.receivingRecords.receivingRecordInputs.receivingAddr = response.data[0]["receivingAddrId"];
+          that.receivingRecords.receivingRecordInputs.operUser = response.data[0]["operUserId"];
+          that.receivingRecords.receivingRecordInputs.receivingStatus = response.data[0]["status"];
+          that.receivingRecords.receivingRecordInputs.delivery = response.data[0]["deliveryId"];
+          that.receivingRecords.receivingRecordInputs.deliveryAddr = response.data[0]["deliveryAddrId"];
+          console.log(`搜索的数据为` + that.receivingRecords.receivingRecordInputs);
+        })
+        .catch(error => {
+          console.log(`搜索出错，错误为：`, error);
+        }); 
+    },
     // 点击确认收货 
     receiveClick(){
       const that = this;
@@ -544,8 +623,9 @@ export default {
       // console.log(that.controlData.isAddreceivingRecord);
       // that.controlData.isAddreceivingRecord = true;
 
-      // 新增检验记录
+      
       if(that.controlData.isAddreceivingRecord == true){
+        // 新增检验记录
         let qualityTestRecordParams = {
           qualityTestSerialNo: "test" + (that.controlData.qualityTestCount).toString(),
           receivingSerialNo: "receive" + (that.controlData.receivingCount).toString(),
@@ -553,12 +633,15 @@ export default {
         console.log("检验记录params");
         console.log(qualityTestRecordParams);
         that.addQualityTestRecord(qualityTestRecordParams);
+
+        
       }
 
       // 新增收货记录明细
       console.log("需要新增" + that.receivingRecords.receivingRecordDetails.length + "条收货记录明细");
       for (var i = 0; i < that.receivingRecords.receivingRecordDetails.length; i++){
         var result = that.receivingRecords.receivingRecordDetails[i];
+        // 控制信息重置
         that.controlData.isAddreceivingRecordDetail = false;
         // result["note"] = '';
         let receivingRecordDetailsParams = {
@@ -569,21 +652,37 @@ export default {
           receivingQuantity: parseInt(result.receivingQuantity),
           note: result.note,
         }
-        console.log("receivingRecordDetailsParams");
+        console.log("收货记录明细Params");
         console.log(receivingRecordDetailsParams);
         that.addReceivingRecordDetail(receivingRecordDetailsParams);
 
-        // // 新增检验记录明细
-        // if(that.controlData.isAddreceivingRecordDetail = true){
-        //   let receivingRecordDetailParams = {
-        //     qualityTestSerialNo: "test" + (that.controlData.qualityTestCount).toString(),
-        //     receivingSerialNo: "receive" + (that.controlData.receivingCount).toString(),
-        //     materialCode: result.materialCode,
-        //     unitId: parseInt(result.unitId),
-        //   }
-        // }
+        // 新增检验记录明细
+        if(that.controlData.isAddreceivingRecordDetail = true){
+          let qualityTestRecordDetailParams = {
+            qualityTestSerialNo: "test" + (that.controlData.qualityTestCount).toString(),
+            receivingSerialNo: "receive" + (that.controlData.receivingCount).toString(),
+            materialCode: result.materialCode,
+            unitId: parseInt(result.unitId),
+            qualityTestQuantity: parseInt(result.receivingQuantity),
+          }
+          console.log("检验记录明细params");
+          console.log(qualityTestRecordDetailParams);
+          that.addQualityTestRecordDetail(qualityTestRecordDetailParams);
+        }
       }     
       if (that.controlData.isAddreceivingRecord = true){
+        // 更新入库计划的收货时间和状态
+        var arrivalDate = that.changeDate(that.receivingRecords.receivingRecordInputs.receivingDate);
+        let updateParams = {
+          planSerialNo: that.receivingRecords.receivingRecordInputs.planSerialNo,
+          operation: 0,
+          arrivalDate: arrivalDate,
+        }
+        console.log("入库计划更新params");
+        console.log(updateParams);
+        that.updateStockInPlanByParams(updateParams);
+
+
         that.controlData.receivingCount += 1;
         console.log(that.controlData.receivingCount);
       }

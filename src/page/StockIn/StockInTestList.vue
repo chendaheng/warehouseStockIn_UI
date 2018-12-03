@@ -116,7 +116,7 @@
               show-overflow-tooltip>
             </el-table-column>
             <el-table-column
-              prop="status"
+              prop="testStatus"
               label="检验状态"
               show-overflow-tooltip>
             </el-table-column>
@@ -254,7 +254,7 @@ export default {
             picker: "张三", 
             operUser: "王二",
             affirmant: "李四",
-            status: "全部通过",
+            testStatus: "全部通过",
             note: "备注1"
           },
           {
@@ -266,7 +266,7 @@ export default {
             picker: "张三", 
             operUser: "王二",
             affirmant: "李四",
-            status: "全部通过",
+            testStatus: "全部通过",
             note: "备注2"
           }
         ],
@@ -315,7 +315,113 @@ export default {
   },
   created: function () {
     const that = this;
-    console.log(`进入页面`);
+    console.log(`进入收货检验任务列表页面`);
+  },
+  methods: {
+    // ------------------------------------ 工具函数 ------------------------------------
+    //改变检验记录显示内容
+    changeQualityTestRecord(result){
+      for (var i = 0; i < result.length; i++){
+        var thisResult = result[i];
+        if (thisResult.hasOwnProperty("deptId")){
+          var dept = thisResult["deptId"];
+          if(parseInt(thisResult["deptId"]) == 55501){
+            dept = "检验部门1";
+          }
+          if(parseInt(thisResult["deptId"]) == 55502){
+            dept = "检验部门2";
+          }
+          if(parseInt(thisResult["deptId"]) == 55503){
+            dept = "检验部门3";
+          }
+          result[i]["dept"] = dept;
+        }
+        if (thisResult.hasOwnProperty("pickerId")){
+          var picker = thisResult["pickerId"];
+          if (parseInt(thisResult["pickerId"]) == 550101){
+            picker = "检验领料人1";
+          }
+          if (parseInt(thisResult["pickerId"]) == 550102){
+            picker = "检验领料人2";
+          }
+          if (parseInt(thisResult["pickerId"]) == 550103){
+            picker = "检验领料人3";
+          }
+          result[i]["picker"] = picker;
+        }
+        if (thisResult.hasOwnProperty("operUserId")){
+          var operUser = thisResult["operUserId"];
+          result[i]["operUser"] = operUser.toString();
+          if (parseInt(thisResult["operUserId"]) == 550201){
+              operUser = "检验员1";
+          }
+          if (parseInt(thisResult["operUserId"]) == 550202){
+              operUser = "检验员2";
+          }
+          if (parseInt(thisResult["operUserId"]) == 550203){
+              operUser = "检验员3";
+          }
+          result[i]["operUser"] = operUser;
+        }
+        if (thisResult.hasOwnProperty("affirmantId")){
+          var affirmant = thisResult["affirmantId"];
+          result[i]["affirmant"] = affirmant.toString();
+          if (parseInt(thisResult["affirmantId"]) == 550301){
+              affirmant = "确认者1";
+          }
+          if (parseInt(thisResult["affirmantId"]) == 550302){
+              affirmant = "确认者2";
+          }
+          if (parseInt(thisResult["affirmantId"]) == 550303){
+              affirmant = "确认者3";
+          }
+          result[i]["affirmant"] = affirmant;
+        }
+        if (thisResult.hasOwnProperty("status")){
+          var testStatus = "";
+          if (parseInt(thisResult["status"]) == 0){
+              testStatus = "不合格"
+          }
+          if (parseInt(thisResult["status"]) == 1){
+              testStatus = "部分通过"
+          }
+          if (parseInt(thisResult["status"]) == 2){
+              testStatus = "全部通过"
+          }
+          result[i]["testStatus"] = testStatus;
+        }
+      }
+    },
+    //获取所有的检验记录
+    getAllQualityTestRecord(){
+      const that = this;
+      var jsonLength = 0;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/getAllStockInPlanByEntryType`)
+        .then(response => {
+          for (var item in response.data){
+            jsonLength++;
+          }
+          that.tests.pagination.total = jsonLength;
+          console.log(`所有的检验记录条数为`+ that.tests.pagination.total);
+        })
+        .catch(error => {
+          console.log(`加载检验记录出错`, error);
+        });
+    },
+    //根据页码获取检验记录
+    getQualityTestRecordByPage(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/getQualityTestRecordByPage`, params)
+        .then(response => {
+          var result = response.data;
+          that.tests.tests = that.changeQualityTestRecord(result);
+        })
+        .catch(error => {
+          console.log(`根据页码加载检验记录出错`, error);
+        });
+    }
   }
 }
 </script>

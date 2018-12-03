@@ -561,6 +561,9 @@ export default {
                     var result = response.data;
                     that.plans.plans = that.changeStockInPlan(result);
                 })
+                .catch(error => {
+                    console.log(error);
+                }); 
             if (callback !== undefined)
                 return callback();
         },
@@ -640,7 +643,9 @@ export default {
                     var number = that.plans.pagination.pageSize;
                     that.showSearchResults(that.plans.plansSearchResults, page, number);
                 })
-                
+                .catch(error => {
+                    console.log(error);
+                });        
         },
         // 搜集搜索条件
         collectSearchOptions(){
