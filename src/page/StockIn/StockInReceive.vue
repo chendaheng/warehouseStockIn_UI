@@ -27,7 +27,6 @@
             <div class="title">到货日</div>
             <el-date-picker
               v-model="receivingRecords.receivingRecordInputs.receivingDate"
-              value-format="yyyy-MM-dd HH:mm:ss"
               type="date"
               placeholder="选择日期"
               clearable>
@@ -195,6 +194,16 @@ export default {
           note: "",
         },
         receivingRecordDetails:[
+          {
+            materialCode: "",
+            format: "",
+            unit: "",
+            planQuantity: "",
+            receivingQuantity: "",
+            singlePrice: "",
+            account: "",
+            note: "",
+          },
           // {
           //   materialCode: "10001",
           //   format: "规格1",

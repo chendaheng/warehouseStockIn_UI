@@ -321,6 +321,9 @@ export default {
                         note: "备注2"
                     }
                 ],
+                plansSearchResults:[
+                    
+                ],
                 pagination: {
                     currentPage: 1,
                     pageSizes: [5, 10, 20, 30, 50],
@@ -614,7 +617,7 @@ export default {
             var lenth = that.plans.pagination.total;
             var startNum = (page - 1) * size;
             var endNum = startNum + size;
-            console.log(endNum);
+            console.log(`endNum: ` + endNum);
             if (endNum > lenth){
                 endNum = lenth;
             }
@@ -703,7 +706,7 @@ export default {
             const that = this;
             console.log(`row = `, row);
             console.log(`点击了本行的收货按钮`);
-            this.$router.push({
+            that.$router.push({
                 path: `/StockIn/StockInReceive`,
                 query: {
                     planSerialNo: row.planSerialNo,
@@ -734,7 +737,7 @@ export default {
             const that = this;
             console.log(`row`, row);
             if (column.label !== "操作") {
-                console.log(`本行被点击，显示明细`);
+                console.log(`本行被点击，显示计划明细`);
                 let params = {
                     planSerialNo: row.planSerialNo
                 }
@@ -746,7 +749,7 @@ export default {
         handleCurrentChange(val) {
             const that = this;
             console.log(`页码改变，当前页为: ${val}`);
-            that.plans.pagination.currentPage = val
+            that.plans.pagination.currentPage = val;
             if (that.controlData.searchControl === false){
                 let params = {
                     page : that.plans.pagination.currentPage,
@@ -787,6 +790,7 @@ export default {
             const that = this;
             console.log(`搜索按钮点击`);
             let params = that.collectSearchOptions();
+            console.log(`条件搜集完毕`);
             that.searchStockInPlanByParams(params);
         }
     },

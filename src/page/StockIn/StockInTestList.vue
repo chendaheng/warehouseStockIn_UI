@@ -56,7 +56,7 @@
           </el-col>
           <!-- 搜索按钮部分 -->
           <el-col :span="2">
-            <el-button type="primary" icon="el-icon-search">搜索</el-button>
+            <el-button type="primary" icon="el-icon-search" @click="handleTestTableSearch()">搜索</el-button>
           </el-col>
         </el-row>
       </div>
@@ -234,12 +234,16 @@ export default {
         options: {
           operUserOptions: [
             {
-              value: 1,
+              value: 550201,
               label: "检验员1"
             },
             {
-              value: 2,
+              value: 550202,
               label: "检验员2"
+            },
+            {
+              value: 550203,
+              label: "检验员3"
             }
           ]
         }
@@ -270,6 +274,9 @@ export default {
             testStatus: "全部通过",
             note: "备注2"
           }
+        ],
+        testsSearchResults:[
+
         ],
         pagination: {
           currentPage: 1,
@@ -326,6 +333,19 @@ export default {
   },
   methods: {
     // ------------------------------------ 工具函数 ------------------------------------
+    changeDate(date){
+      var y = date.getFullYear(); 
+      var m = date.getMonth() + 1; 
+      m = m < 10 ? ('0' + m) : m;  
+      var d = date.getDate();  
+      d = d < 10 ? ('0' + d) : d;  
+      var h = date.getHours();  
+      var minute = date.getMinutes();
+      minute = minute < 10 ? ('0' + minute) : minute; 
+      var second= date.getSeconds();
+      second = minute < 10 ? ('0' + second) : second;  
+      return y + '-' + m + '-' + d+' '+h+':'+minute+':'+ second;  
+    },
     //改变检验记录显示内容
     changeQualityTestRecord(result){
       for (var i = 0; i < result.length; i++){
@@ -408,14 +428,14 @@ export default {
               testStatus = "未检验"
           }
           if (parseInt(thisResult["status"]) == 1){
-              testStatus = "不合格"
+              testStatus = "已检验"
           }
-          if (parseInt(thisResult["status"]) == 2){
-              testStatus = "部分通过"
-          }
-          if (parseInt(thisResult["status"]) == 3){
-              testStatus = "全部通过"
-          }
+          // if (parseInt(thisResult["status"]) == 2){
+          //     testStatus = "部分通过"
+          // }
+          // if (parseInt(thisResult["status"]) == 3){
+          //     testStatus = "全部通过"
+          // }
           result[i]["testStatus"] = testStatus;
         }
       }
@@ -477,6 +497,73 @@ export default {
           console.log(`加载检验记录明细时出错，检验单号为：`, params.qualityTestSerialNo);
         });
     },
+    // 搜集搜索条件
+    collectSearchOptions(){
+      let result = {};
+      const that = this;
+      for (let key in that.searchOptions.searchParams){
+        if (that.searchOptions.searchParams[key] !== "") {
+          if (key === "operUser"){
+            result["operUserId"] = that.searchOptions.searchParams[key];
+          }
+          else if (key == "dateRange"){
+            var dateRange = that.searchOptions.searchParams[key];
+            var DateStart = that.changeDate(dateRange[0]);
+            result["DateStart"] = DateStart;
+            var DateEnd = that.changeDate(dateRange[1]);
+            result["DateEnd"] = DateEnd;
+          }
+          else{
+            result[key] = that.searchOptions.searchParams[key];
+          }
+        }
+      }
+      console.log(`搜索条件`);
+      console.log(result);
+      return result;
+    },
+    //根据条件搜索相应的检验记录
+    searchQualityTestRecordByParams(params){
+      const that = this;
+      that.controlData.searchControl = true;
+      var jsonLength = 0;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/searchQualityTestRecordByParams`, params)
+        .then(response => {
+          console.log(`搜索的数据`);
+          console.log(response.data);
+          for (var item in response.data){
+            jsonLength++;
+          }
+          that.tests.pagination.total = jsonLength;
+          console.log(`总共搜索出`+ that.tests.pagination.total +　`条数据`);
+          that.tests.testsSearchResults = response.data;
+          console.log(that.tests.testsSearchResults);
+          var page = that.tests.pagination.currentPage;
+          var number = that.tests.pagination.pageSize;
+          that.showSearchResults(that.tests.testsSearchResults, page, number);
+        })
+        .catch(error => {
+          console.log(`搜索检验记录出错`, error);
+        });
+    },
+    // 显示搜索结果
+    showSearchResults(result, page, size){
+      const that = this;
+      that.testDetails.hasTestDetails = false;
+      var showResults = [];
+      var lenth = that.tests.pagination.total;
+      var startNum = (page - 1) * size;
+      var endNum = startNum + size;
+      console.log(`endNum: ` + endNum);
+      if (endNum > lenth){
+          endNum = lenth;
+      }
+      for (var i = startNum; i < endNum; i++){
+        showResults.push(result[i]);
+      }
+      that.tests.tests = that.changeQualityTestRecord(showResults);
+    },
     // ------------------------------------ 业务函数 ------------------------------------
     //点击表格加载明细
     handleTestTableClick(row, event, column){
@@ -507,7 +594,15 @@ export default {
     handleTestTableStockInFunction(row){
       console.log(`row = `, row);
       console.log(`点击了本行的入库按钮`);
-    }
+    },
+    // 搜索按钮点击
+    handleTestTableSearch(){
+      const that = this;
+      console.log(`搜索按钮点击`);
+      let params = that.collectSearchOptions();
+      console.log(`条件搜集完毕`);
+      that.searchQualityTestRecordByParams(params);
+    },
   }
 }
 </script>

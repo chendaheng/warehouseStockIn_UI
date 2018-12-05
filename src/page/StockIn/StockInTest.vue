@@ -134,7 +134,8 @@
             <div class="title">检验时间</div>
             <el-date-picker
               v-model="qualityTestRecord.params.qualityTestDate"
-              type="date"
+              value-format="yyyy-MM-dd HH:mm:ss"
+              type="datetime"
               placeholder="选择日期"
               clearable>
             </el-date-picker>
@@ -188,6 +189,7 @@
         :data="qualityTestRecordDetail"
         max-height="400"
         border
+        @selection-change="changeCheckBoxFun"
         :stripe="true"
         :highlight-current-row="true"
         style="width: 100%; margin-top: 20px">
@@ -331,6 +333,10 @@ export default {
           result: '',
         }
       ],
+      multipleSelection: [],
+      controlData: {
+        isAllMaterialGetTestFlag: 0,
+      },
     };
   },
   created: function (){
@@ -347,8 +353,14 @@ export default {
     that.getQualityTestRecordDetailByQualityTestSerialNo(params);
   },
   methods: {
+    changeCheckBoxFun(val){
+      const that = this;
+      that.multipleSelection = val;
+      console.log(that.multipleSelection);
+    },
     // ------------------------------------ 工具函数 ------------------------------------
     changeDate(date){
+      var date = new Date(date);
       var y = date.getFullYear(); 
       var m = date.getMonth() + 1; 
       m = m < 10 ? ('0' + m) : m;  
@@ -383,8 +395,8 @@ export default {
           var result = response.data;
           for (var i = 0; i < result.length; i++){
             var thisResult = result[i];
-            thisResult["entryQuantity"] = ' ';
-            thisResult["returnQuantity"] = ' ';
+            thisResult["entryQuantity"] = (thisResult["entryQuantity"]).toString();
+            thisResult["returnQuantity"] = (thisResult["returnQuantity"]).toString();
             if (thisResult.hasOwnProperty("unitId")){  
               var unit = thisResult["unitId"];
               result[i]["unit"] = "计量单位" + unit.toString();
@@ -405,10 +417,31 @@ export default {
         .post(`http://localhost:8090/wareHouse/stockIn/updateQualityTestRecordDetail`, params)
         .then(response => {
           console.log(`成功更新`+ (response.data).toString() +`条检验记录明细`);
-          
         })
         .catch(error => {
           console.log(`更新检验记录明细失败`);
+        });
+    },
+    //判断一条检验记录的物料是否全部检验
+    isAllMaterialGetTest(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/isAllMaterialGetTest`, params)
+        .then(response => {
+          that.controlData.isAllMaterialGetTestFlag = response.data;
+          console.log(`一条检验记录的物料是否全部检验标志位为` + that.controlData.isAllMaterialGetTestFlag);
+          if(that.controlData.isAllMaterialGetTestFlag == 1){
+            console.log(`更新检验记录的状态`);
+            let updateParams = {
+              qualityTestSerialNo : that.qualityTestRecord.params.qualityTestSerialNo,
+              receivingSerialNo: that.qualityTestRecord.params.receivingSerialNo,
+              status: 1,
+            }
+            that.updateQualityTestRecord(updateParams);
+          }
+        })
+        .catch(error => {
+          console.log(error);
         });
     },
     // ------------------------------------ 业务函数 ------------------------------------
@@ -429,12 +462,37 @@ export default {
         qualityTestDate: date,
         note: updateTestRecordData.note,
       }
+      console.log("检验记录更新Params");
+      console.log(qualityTestRecordParams);
       that.updateQualityTestRecord(qualityTestRecordParams);
     },
     // 点击确认物料检验结果
     TestDetailClick(){
       const that = this;
       console.log("确认物料检验结果按钮被点击");
+      var updateTestRecordDetailData = that.multipleSelection;
+      for (var i = 0; i < updateTestRecordDetailData.length; i++){
+        var thisData = updateTestRecordDetailData[i];
+        let qualityTestRecordDetailParams = {
+          qualityTestSerialNo: thisData.qualityTestSerialNo,
+          receivingSerialNo: thisData.receivingSerialNo,
+          materialCode: thisData.materialCode,
+          qualityTestMethod: thisData.qualityTestMethod,
+          qualityTestStandard: thisData.qualityTestStandard,
+          entryQuantity: thisData.entryQuantity,
+          returnQuantity: thisData.returnQuantity,
+          reason: thisData.reason,
+          result: thisData.result,
+        }
+        console.log("检验记录明细更新Params");
+        console.log(qualityTestRecordDetailParams);
+        that.updateQualityTestRecordDetail(qualityTestRecordDetailParams);
+        let getFlagParams = {
+          qualityTestSerialNo: thisData.qualityTestSerialNo,
+        }
+        that.isAllMaterialGetTest(getFlagParams);
+        
+      }
     }
   }
 }
