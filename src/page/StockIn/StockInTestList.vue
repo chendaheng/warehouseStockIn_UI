@@ -492,8 +492,16 @@ export default {
     },
     //点击检验
     handleTestTableTestFunction(row){
+      const that = this;
       console.log(`row = `, row);
       console.log(`点击了本行的检验按钮`);
+      that.$router.push({
+        path: `/StockIn/StockInTest`,
+        query: {
+          qualityTestSerialNo: row.qualityTestSerialNo,
+          receivingSerialNo: row.receivingSerialNo,
+        },
+      });
     },
     //点击入库
     handleTestTableStockInFunction(row){

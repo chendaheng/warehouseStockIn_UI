@@ -132,7 +132,12 @@
         <el-col :span="8">
           <div class="bar">
             <div class="title">检验时间</div>
-            <el-input v-model="qualityTestRecord.params.qualityTestDate" clearable placeholder="请输入"></el-input>
+            <el-date-picker
+              v-model="qualityTestRecord.params.qualityTestDate"
+              type="date"
+              placeholder="选择日期"
+              clearable>
+            </el-date-picker>
           </div>
         </el-col>
         <el-col :span="8">
@@ -150,11 +155,14 @@
         </el-col>
       </el-row>
       <el-row :gutter="10">
-        <el-col :span="21">
+        <el-col :span="20">
           <div class="bar">
             <div class="title">备注</div>
             <el-input v-model="qualityTestRecord.params.note" type="textarea" clearable :rows="3" style="margin-left: 30px"></el-input>
           </div>
+        </el-col>
+        <el-col :span="6">
+          <el-button type="primary" @click="TestClick()">确认检验单信息</el-button>
         </el-col>
       </el-row>
     </el-card>
@@ -172,6 +180,9 @@
             <el-input v-model="barCode" clearable placeholder="扫描条码增加数据" style="margin-left: 0"></el-input>
           </div>
         </el-col>
+        <el-col :span="2">
+          <el-button type="primary" size="small" @click="TestDetailClick()">确认物料检验结果</el-button>
+        </el-col>
       </el-row>
       <el-table
         :data="qualityTestRecordDetail"
@@ -184,12 +195,36 @@
         <el-table-column prop="materialCode" label="物料编码" align="center"></el-table-column>
         <el-table-column prop="unit" label="计量单位" align="center"></el-table-column>
         <el-table-column prop="qualityTestQuantity" label="检验数量" align="center"></el-table-column>
-        <el-table-column prop="qualityTestMethod" label="检验方法" align="center"></el-table-column>
-        <el-table-column prop="qualityTestStandard" label="检验标准" align="center"></el-table-column>
-        <el-table-column prop="entryQuantity" label="可入库数量" align="center"></el-table-column>
-        <el-table-column prop="returnQuantity" label="退货数量" align="center"></el-table-column>
-        <el-table-column prop="reason" label="原因" align="center"></el-table-column>
-        <el-table-column prop="result" label="检验结果" align="center"></el-table-column>
+        <el-table-column prop="qualityTestMethod" label="检验方法" align="center">
+          <template slot-scope="scope">
+            <el-input v-model="qualityTestRecordDetail[scope.$index]['qualityTestMethod']"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column prop="qualityTestStandard" label="检验标准" align="center">
+          <template slot-scope="scope">
+            <el-input v-model="qualityTestRecordDetail[scope.$index]['qualityTestStandard']"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column prop="entryQuantity" label="可入库数量" align="center">
+          <template slot-scope="scope">
+            <el-input v-model="qualityTestRecordDetail[scope.$index]['entryQuantity']"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column prop="returnQuantity" label="退货数量" align="center">
+          <template slot-scope="scope">
+            <el-input v-model="qualityTestRecordDetail[scope.$index]['returnQuantity']"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column prop="reason" label="原因" align="center">
+          <template slot-scope="scope">
+            <el-input v-model="qualityTestRecordDetail[scope.$index]['reason']"></el-input>
+          </template>
+        </el-table-column>
+        <el-table-column prop="result" label="检验结果" align="center">
+          <template slot-scope="scope">
+            <el-input v-model="qualityTestRecordDetail[scope.$index]['result']"></el-input>
+          </template>
+        </el-table-column>
       </el-table>
     </el-card>
   </div>
@@ -209,13 +244,66 @@ export default {
           affirmant: '',
           qualityTestDate: '',
           picker: '',
+          status:'',
           note: '',
         },
         options: {
-          operUserOptions: [],
-          deptOptions: [],
-          affirmantOptions: [],
-          pickerOptions: [],
+          operUserOptions: [
+            {
+              value: 550201,
+              label: "检验员1"
+            },
+            {
+              value: 550202,
+              label: "检验员2"
+            },
+            {
+              value: 550203,
+              label: "检验员3"
+            }
+          ],
+          deptOptions: [
+            {
+              value: 55501,
+              label: "检验部门1"
+            },
+            {
+              value: 55502,
+              label: "检验部门2"
+            },
+            {
+              value: 55503,
+              label: "检验部门3"
+            }
+          ],
+          affirmantOptions: [
+            {
+              value: 550301,
+              label: "确认者1"
+            },
+            {
+              value: 550302,
+              label: "确认者2"
+            },
+            {
+              value: 550303,
+              label: "确认者3"
+            }
+          ],
+          pickerOptions: [
+            {
+              value: 550101,
+              label: "检验领料人1"
+            },
+            {
+              value: 550102,
+              label: "检验领料人2"
+            },
+            {
+              value: 550103,
+              label: "检验领料人3"
+            }
+          ],
         }
       },
       // rules: {
@@ -243,9 +331,112 @@ export default {
           result: '',
         }
       ],
+    };
+  },
+  created: function (){
+    const that = this;
+    console.log("进入检验画面");
+    console.log(`route` + that.$route);
+    var result = {};
+    result = that.$route.query;
+    that.qualityTestRecord.params.qualityTestSerialNo = result["qualityTestSerialNo"];
+    that.qualityTestRecord.params.receivingSerialNo = result["receivingSerialNo"];
+    let params = {
+      qualityTestSerialNo : result["qualityTestSerialNo"],
+    }
+    that.getQualityTestRecordDetailByQualityTestSerialNo(params);
+  },
+  methods: {
+    // ------------------------------------ 工具函数 ------------------------------------
+    changeDate(date){
+      var y = date.getFullYear(); 
+      var m = date.getMonth() + 1; 
+      m = m < 10 ? ('0' + m) : m;  
+      var d = date.getDate();  
+      d = d < 10 ? ('0' + d) : d;  
+      var h = date.getHours();  
+      var minute = date.getMinutes();
+      minute = minute < 10 ? ('0' + minute) : minute; 
+      var second= date.getSeconds();
+      second = minute < 10 ? ('0' + second) : second;  
+      return y + '-' + m + '-' + d+' '+h+':'+minute+':'+ second;  
+    },
+    //更新检验记录
+    updateQualityTestRecord(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/updateQualityTestRecord`, params)
+        .then(response => {
+          console.log(`成功更新`+ (response.data).toString() +`条检验记录`);
+          
+        })
+        .catch(error => {
+          console.log(`更新检验记录失败`);
+        });
+    },
+    // 根据检验单号获取对应的检验记录明细
+    getQualityTestRecordDetailByQualityTestSerialNo(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/getQualityTestRecordDetailByQualityTestSerialNo`, params)
+        .then(response => {
+          var result = response.data;
+          for (var i = 0; i < result.length; i++){
+            var thisResult = result[i];
+            thisResult["entryQuantity"] = ' ';
+            thisResult["returnQuantity"] = ' ';
+            if (thisResult.hasOwnProperty("unitId")){  
+              var unit = thisResult["unitId"];
+              result[i]["unit"] = "计量单位" + unit.toString();
+            }
+          }
+          that.qualityTestRecordDetail = result;
+          // that.qualityTestRecordDetail = response.data;
+          console.log(`加载检验记录明细成功，检验单号为：`, params.qualityTestSerialNo);
+        })
+        .catch(error => {
+          console.log(`加载检验记录明细时出错，检验单号为：`, params.qualityTestSerialNo);
+        });
+    },
+    // 更新检验记录明细
+    updateQualityTestRecordDetail(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/updateQualityTestRecordDetail`, params)
+        .then(response => {
+          console.log(`成功更新`+ (response.data).toString() +`条检验记录明细`);
+          
+        })
+        .catch(error => {
+          console.log(`更新检验记录明细失败`);
+        });
+    },
+    // ------------------------------------ 业务函数 ------------------------------------
+    // 点击确认检验单信息
+    TestClick(){
+      const that = this;
+      console.log("确认检验单信息按钮被点击");
+      var updateTestRecordData = that.qualityTestRecord.params;
+      var date = that.changeDate(updateTestRecordData.qualityTestDate);
+      let qualityTestRecordParams = {
+        qualityTestSerialNo: updateTestRecordData.qualityTestSerialNo,
+        receivingSerialNo: updateTestRecordData.receivingSerialNo,
+        qualityTestAddr: updateTestRecordData.qualityTestAddr,
+        deptId: updateTestRecordData.dept,
+        operUserId: updateTestRecordData.operUser,
+        pickerId: updateTestRecordData.picker,
+        affirmantId: updateTestRecordData.affirmant,
+        qualityTestDate: date,
+        note: updateTestRecordData.note,
+      }
+      that.updateQualityTestRecord(qualityTestRecordParams);
+    },
+    // 点击确认物料检验结果
+    TestDetailClick(){
+      const that = this;
+      console.log("确认物料检验结果按钮被点击");
     }
   }
-  
 }
 </script>
 

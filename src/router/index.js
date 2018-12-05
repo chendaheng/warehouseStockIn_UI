@@ -46,6 +46,10 @@ const StockInTest = r => require.ensure([], () => r(require('../page/StockIn/Sto
 const StockInPurchase = r => require.ensure([], () => r(require('../page/StockIn/StockInPurchase')), 'StockInPurchase');
 // 入库模块 -- 其他入库
 const StockInOther = r => require.ensure([], () => r(require('../page/StockIn/StockInOther')), 'StockInOther');
+// 入库模块 -- 非计划收货
+const StockInOutPlan = r => require.ensure([], () => r(require('../page/StockIn/StockInOutPlan')), 'StockInOutPlan');
+// 入库模块 -- 入库上架
+const StockInShelf = r => require.ensure([], () => r(require('../page/StockIn/StockInShelf')), 'StockInShelf');
 // -------------------------------------------- 路由配置部分 --------------------------------------------
 export default [{
   path: Config.route.login,
@@ -146,6 +150,20 @@ export default [{
     component: StockInOther,
     meta: {
       bcrumd: ['入库', '其他入库'],
+    }
+  },{ // 非计划收货
+    path: '/stockin/stockinoutplan',
+    name: 'StockInOutPlan',
+    component: StockInOutPlan,
+    meta: {
+      bcrumd: ['入库', '非计划收货'],
+    }
+  },{ // 上架
+    path: '/stockin/stockinshelf',
+    name: 'StockInShelf',
+    component: StockInShelf,
+    meta: {
+      bcrumd: ['入库', '入库上架'],
     }
   }
 ]

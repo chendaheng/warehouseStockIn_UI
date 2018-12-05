@@ -13,7 +13,7 @@
       position: relative;
       padding: 50px 0px 0px 180px;
       width: auto;
-      height: auto;
+      height: 100%;
       &.console-main-full {
         margin-left: 130px;
       }

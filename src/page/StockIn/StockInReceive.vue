@@ -27,6 +27,7 @@
             <div class="title">到货日</div>
             <el-date-picker
               v-model="receivingRecords.receivingRecordInputs.receivingDate"
+              value-format="yyyy-MM-dd HH:mm:ss"
               type="date"
               placeholder="选择日期"
               clearable>
@@ -193,7 +194,7 @@ export default {
           attachmentId: "",
           note: "",
         },
-        receivingRecordDetails :[
+        receivingRecordDetails:[
           // {
           //   materialCode: "10001",
           //   format: "规格1",
@@ -632,9 +633,7 @@ export default {
         }
         console.log("检验记录params");
         console.log(qualityTestRecordParams);
-        that.addQualityTestRecord(qualityTestRecordParams);
-
-        
+        that.addQualityTestRecord(qualityTestRecordParams);  
       }
 
       // 新增收货记录明细
@@ -664,6 +663,7 @@ export default {
             materialCode: result.materialCode,
             unitId: parseInt(result.unitId),
             qualityTestQuantity: parseInt(result.receivingQuantity),
+            result: "未检验",
           }
           console.log("检验记录明细params");
           console.log(qualityTestRecordDetailParams);
