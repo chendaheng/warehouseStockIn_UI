@@ -95,7 +95,7 @@
         <el-menu-item index="/stockin/stockinpurchase"><i class="el-icon-document"></i>采购订单入库</el-menu-item>
         <el-menu-item index="/stockin/stockinother"><i class="el-icon-document"></i>其他入库画面</el-menu-item>
         <el-menu-item index="/stockin/stockinoutplan"><i class="el-icon-document"></i>非计划收获画面</el-menu-item>
-        <!-- <el-menu-item index="/stockin/stockinpickandpack"><i class="el-icon-document"></i>入库列表画面</el-menu-item> -->
+        <el-menu-item index="/stockin/stockinlist"><i class="el-icon-document"></i>入库列表画面</el-menu-item>
         <el-menu-item index="/stockin/stockinshelf"><i class="el-icon-document"></i>入库上架画面</el-menu-item>
       </el-submenu>
     </el-menu>

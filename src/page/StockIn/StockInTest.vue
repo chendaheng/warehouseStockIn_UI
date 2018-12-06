@@ -423,14 +423,14 @@ export default {
         });
     },
     //判断一条检验记录的物料是否全部检验
-    isAllMaterialGetTest(params){
+    isAllMaterialGetTest(params, callback){
       const that = this;
       that.$axios
         .post(`http://localhost:8090/wareHouse/stockIn/isAllMaterialGetTest`, params)
         .then(response => {
           that.controlData.isAllMaterialGetTestFlag = response.data;
           console.log(`一条检验记录的物料是否全部检验标志位为` + that.controlData.isAllMaterialGetTestFlag);
-          if(that.controlData.isAllMaterialGetTestFlag == 1){
+          if(that.controlData.isAllMaterialGetTestFlag === 1){
             console.log(`更新检验记录的状态`);
             let updateParams = {
               qualityTestSerialNo : that.qualityTestRecord.params.qualityTestSerialNo,
@@ -443,6 +443,8 @@ export default {
         .catch(error => {
           console.log(error);
         });
+        if (callback !== undefined)
+          return callback();
     },
     // ------------------------------------ 业务函数 ------------------------------------
     // 点击确认检验单信息
@@ -487,12 +489,11 @@ export default {
         console.log("检验记录明细更新Params");
         console.log(qualityTestRecordDetailParams);
         that.updateQualityTestRecordDetail(qualityTestRecordDetailParams);
-        let getFlagParams = {
+      }
+      let getFlagParams = {
           qualityTestSerialNo: thisData.qualityTestSerialNo,
         }
-        that.isAllMaterialGetTest(getFlagParams);
-        
-      }
+      that.isAllMaterialGetTest(getFlagParams);
     }
   }
 }

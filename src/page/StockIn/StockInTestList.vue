@@ -139,6 +139,8 @@
         <!-- 分页 -->
         <div class="pagination">
           <el-pagination
+            @current-change="handleCurrentChange"
+            @size-change="handleSizeChange"
             :current-page=tests.pagination.currentPage
             :page-sizes=tests.pagination.pageSizes
             :page-size=tests.pagination.pageSize
@@ -318,6 +320,7 @@ export default {
       },
       controlData: {
         hasUpdated: false,
+        searchControl: false,
       },
     };
   },
@@ -518,7 +521,7 @@ export default {
           }
         }
       }
-      console.log(`搜索条件`);
+      console.log(`搜索条件如下:`);
       console.log(result);
       return result;
     },
@@ -575,6 +578,46 @@ export default {
           qualityTestSerialNo: row.qualityTestSerialNo,
         }
         that.getQualityTestRecordDetailByQualityTestSerialNo(params);
+      }
+    },
+    // 当前页码改变时触发函数
+    handleCurrentChange(val) {
+      const that = this;
+      console.log(`页码改变，当前页为: ${val}`);
+      that.tests.pagination.currentPage = val;
+      if (that.controlData.searchControl === false){
+        let params = {
+          page : that.tests.pagination.currentPage,
+          number : that.tests.pagination.pageSize,
+        }
+        console.log(`根据页码获取数据`);
+        that.getQualityTestRecordByPage(params);
+      }
+      else if (that.controlData.searchControl === true){
+        console.log(`根据页码获取搜索到的数据`);
+        var page = that.tests.pagination.currentPage;
+        var number = that.tests.pagination.pageSize;
+        that.showSearchResults(that.tests.testsSearchResults, page, number);
+      }
+    },
+    // 每页条数改变时触发函数
+    handleSizeChange(val){
+      const that = this;
+      console.log(`每页显示 ${val} 条数据`);
+      that.tests.pagination.pageSize = val;
+      if (that.controlData.searchControl == false){
+        let params = {
+          page : that.tests.pagination.currentPage,
+          number : that.tests.pagination.pageSize,
+        }
+        console.log(`根据条数刷新数据`);
+        that.getQualityTestRecordByPage(params);
+      }
+      else if (that.controlData.searchControl === true){
+        console.log(`根据条数刷新搜索到的数据`);
+        var page = that.tests.pagination.currentPage;
+        var number = that.tests.pagination.pageSize;
+        that.showSearchResults(that.tests.testsSearchResults, page, number);
       }
     },
     //点击检验

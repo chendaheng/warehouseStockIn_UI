@@ -777,9 +777,11 @@ export default {
                     number : that.plans.pagination.pageSize,
                     entryType : parseInt(that.paramsType)
                 };
+                console.log(`根据条数刷新数据`);
                 that.getStockInPlanByPage(params);
             }
             else if (that.controlData.searchControl == true){
+                console.log(`根据条数刷新搜索到的数据`);
                 var page = that.plans.pagination.currentPage;
                 var number = that.plans.pagination.pageSize;
                 that.showSearchResults(that.plans.plansSearchResults, page, number);

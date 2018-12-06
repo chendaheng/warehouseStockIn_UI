@@ -46,6 +46,8 @@ const StockInTest = r => require.ensure([], () => r(require('../page/StockIn/Sto
 const StockInPurchase = r => require.ensure([], () => r(require('../page/StockIn/StockInPurchase')), 'StockInPurchase');
 // 入库模块 -- 其他入库
 const StockInOther = r => require.ensure([], () => r(require('../page/StockIn/StockInOther')), 'StockInOther');
+// 入库模块 -- 入库列表
+const StockInList = r => require.ensure([], () => r(require('../page/StockIn/StockInList')), 'StockInList');
 // 入库模块 -- 非计划收货
 const StockInOutPlan = r => require.ensure([], () => r(require('../page/StockIn/StockInOutPlan')), 'StockInOutPlan');
 // 入库模块 -- 入库上架
@@ -164,6 +166,13 @@ export default [{
     component: StockInShelf,
     meta: {
       bcrumd: ['入库', '入库上架'],
+    }
+  },{ // 入库列表
+    path: '/stockin/stockinlist',
+    name: 'StockInList',
+    component: StockInList,
+    meta: {
+      bcrumd: ['入库', '入库列表'],
     }
   }
 ]
