@@ -333,7 +333,7 @@ export default {
         }
       },
       stockInRecordDetails:{
-        hasStockInRecordDetails: true,
+        hasStockInRecordDetails: false,
         stockInRecordDetails: [
           {
             index: "1",
@@ -364,7 +364,79 @@ export default {
   },
   props: ['preDefinedType', 'paramsType'],
   methods: {
-
+    // ------------------------------------ 工具函数 ------------------------------------
+    changeDate(date){
+      var y = date.getFullYear(); 
+      var m = date.getMonth() + 1; 
+      m = m < 10 ? ('0' + m) : m;  
+      var d = date.getDate();  
+      d = d < 10 ? ('0' + d) : d;  
+      var h = date.getHours();  
+      var minute = date.getMinutes();
+      minute = minute < 10 ? ('0' + minute) : minute; 
+      var second= date.getSeconds();
+      second = minute < 10 ? ('0' + second) : second;  
+      return y + '-' + m + '-' + d+' '+h+':'+minute+':'+ second;  
+    },
+    //获取当前入库类型下所有入库记录
+    getAllWarehouseStockInRecordByEntryType(params){
+      const that = this;
+      var jsonLength = 0;
+      that.$axios
+      .post(`http://localhost:8090/wareHouse/stockIn/getAllWarehouseStockInRecordByEntryType`, params)
+      .then(response => {
+        for (var item in response.data){
+          jsonLength++;
+        }
+        that.stockInRecords.pagination.total = jsonLength;
+        console.log(`该入库类型下所有的入库单数量为`+ that.stockInRecords.pagination.total);
+        
+      })
+      .catch(error => {
+        console.log(`加载出错，加载类别为` + that.paramsType, error);
+      });
+    },
+    // 根据入库单号获取入库记录明细
+    getWarehouseStockInRecordDetailByEntrySerialNo(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/getWarehouseStockInRecordDetailByEntrySerialNo`, params)
+        .then(response => {
+          var result = response.data;
+          for (var i = 0; i < result.length; i++){
+            var thisResult = result[i];
+            result[i]["index"] = (i + 1).toString();
+            if (thisResult.hasOwnProperty("specification")){
+              var format = thisResult["specification"];
+              result[i]["format"] = format.toString();
+            }
+            if (thisResult.hasOwnProperty("unitId")){
+              var unit = thisResult["unitId"];
+              result[i]["unit"] = "计量单位" + unit.toString();
+            }
+          }
+          that.stockInRecordDetails.hasStockInRecordDetails = true;
+          that.stockInRecordDetails.stockInRecordDetails = result;
+          console.log(`加载明细成功，加载流水号为：`, params.entrySerialNo);
+        })
+    },
+    // 改变入库计划显示内容
+    changeStockInPlan(result){
+      
+    },
+    // ------------------------------------ 业务函数 ------------------------------------
+    // 点击表格显示明细
+    handleRecordTableClick(row, event, column){
+      const that = this;
+      console.log(`row`, row);
+      if (column.label !== "操作") {
+        console.log(`本行被点击，显示入库明细`);
+        let params = {
+          entrySerialNo: row.entrySerialNo,
+        }
+        that.getWarehouseStockInRecordDetailByEntrySerialNo(entrySerialNo);
+      }
+    }
   },
 }
 </script>
