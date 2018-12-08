@@ -107,7 +107,7 @@
               show-overflow-tooltip>
             </el-table-column>
             <el-table-column
-              prop="entryType"
+              prop="stockInType"
               label="入库类型"
               show-overflow-tooltip>
             </el-table-column>
@@ -117,7 +117,7 @@
               show-overflow-tooltip>
             </el-table-column>
             <el-table-column
-              prop="result"
+              prop="stockInResult"
               label="入库结果"
               show-overflow-tooltip>
             </el-table-column>
@@ -300,7 +300,7 @@ export default {
         stockInRecords:[
           {
             entrySerialNo: "entry001",
-            entryType: 1,
+            stockInType: "采购入库",
             vouchSerialNo: "pur001",
             vouchType: 1,
             entryDate: "2018-10-03",
@@ -308,12 +308,12 @@ export default {
             dept: "入库部门1",
             operUser: "入库员1",
             delivery: "江阴供应商",
-            result: "已入库",
+            stockInResult: "已入库",
             note: "备注1",
           },
           {
             entrySerialNo: "entry002",
-            entryType: 1,
+            stockInType: "采购入库",
             vouchSerialNo: "pur002",
             vouchType: 1,
             entryDate: "2018-10-06",
@@ -321,9 +321,12 @@ export default {
             dept: "入库部门2",
             operUser: "入库员2",
             delivery: "无锡供应商",
-            result: "已入库",
+            stockInResult: "已入库",
             note: "备注2",
           }
+        ],
+        stockInSearchResults: [
+
         ],
         pagination: {
           currentPage: 1,
@@ -356,11 +359,26 @@ export default {
             note: "备注5",
           }
         ],
-      }
+      },
+      controlData: {
+        searchControl: false,     
+      },
     };
   },
   created: function () {
-
+    const that = this;
+    console.log(`paramsType`, that.paramsType);
+    console.log(`preDefinedType`, that.preDefinedType);
+    if (that.preDefinedType === that.paramsType) {
+      console.log('获取类型'+that.paramsType+'的所有入库记录');
+      let params = {
+        page : 1,
+        number : that.stockInRecords.pagination.pageSize,
+        entryType : parseInt(that.paramsType)
+      }
+      that.getAllWarehouseStockInRecordByEntryType(params);
+      that.getWarehouseStockInRecordByPage(params);
+    }
   },
   props: ['preDefinedType', 'paramsType'],
   methods: {
@@ -396,6 +414,123 @@ export default {
         console.log(`加载出错，加载类别为` + that.paramsType, error);
       });
     },
+    // 改变入库计划显示内容
+    changeStockInPlan(result){
+      for (var i = 0; i < result.length; i++){
+        var thisResult = result[i];
+        if (thisResult.hasOwnProperty("entryType")){
+          var stockInType = "";
+          if (parseInt(thisResult["entryType"]) == 1){
+            stockInType = "采购入库";
+          }
+          if (parseInt(thisResult["entryType"]) == 2){
+            stockInType = "委外加工入库";
+          }
+          if (parseInt(thisResult["entryType"]) == 3){
+            stockInType = "生产入库";
+          }
+          if (parseInt(thisResult["entryType"]) == 4){
+            stockInType = "销售退货";
+          }
+          if (parseInt(thisResult["entryType"]) == 5){
+            stockInType = "生产退货";
+          }
+          if (parseInt(thisResult["entryType"]) == 6){
+            stockInType = "其他入库";
+          }
+          result[i]["stockInType"] = stockInType;
+        }
+        if (thisResult.hasOwnProperty("warehouseId")){
+          var warehouse = '';
+          if (parseInt(thisResult["warehouseId"]) == 3331){
+            warehouse = "仓库1"
+          }
+          else if (parseInt(thisResult["warehouseId"]) == 3332){
+            warehouse = "仓库2"
+          }
+          else if (parseInt(thisResult["warehouseId"]) == 3333){
+            warehouse = "仓库3"
+          }
+          else {
+            warehouse = thisResult["warehouseId"].toString();
+          }
+          result[i]["warehouse"] = warehouse;
+        }
+        if (thisResult.hasOwnProperty("deptId")){
+          var dept = '';
+          if (parseInt(thisResult["deptId"]) == 333111){
+            dept = "入库部门1";
+          }
+          else if (parseInt(thisResult["deptId"]) == 333112){
+            dept = "入库部门2";
+          }
+          else if (parseInt(thisResult["deptId"]) == 333113){
+            dept = "入库部门3";
+          }
+          else{
+            dept = thisResult["deptId"].toString();
+          }
+          result[i]["dept"] = dept;
+        }
+        if (thisResult.hasOwnProperty("operUserId")){
+          var operUser = '';
+          if (parseInt(thisResult["operUserId"]) == 333001){
+            operUser = "入库人员1";
+          }
+          else if (parseInt(thisResult["operUserId"]) == 333002){
+            operUser = "入库人员2";
+          }
+          else if (parseInt(thisResult["operUserId"]) == 333003){
+            operUser = "入库人员3";
+          }
+          else{
+            operUser = thisResult["operUserId"].toString();
+          }
+          result[i]["operUser"] = operUser;
+        }
+        if (thisResult.hasOwnProperty("deliveryId")){
+          var delivery = '';
+          if (parseInt(thisResult["deliveryId"]) == 66601){
+            delivery = "苏州供应商"
+          }
+          else if (parseInt(thisResult["deliveryId"]) == 66602){
+            delivery = "无锡供应商"
+          }
+          else{
+            delivery = thisResult["deliveryId"].toString();
+          }
+          result[i]["delivery"] = delivery;
+        }
+        if (thisResult.hasOwnProperty("result")){
+          var stockInResult = '';
+          if (parseInt(thisResult["result"]) == 0){
+            stockInResult = "未入库";
+          }
+          if (parseInt(thisResult["result"]) == 1){
+            stockInResult = "已入库";
+          }
+          if (parseInt(thisResult["result"]) == 2){
+            stockInResult = "确认入库";
+          }
+          result[i]["stockInResult"] = stockInResult;
+        }
+      }
+      console.log(result);
+      return result;
+    },
+    // 根据页码获取对应的入库记录
+    getWarehouseStockInRecordByPage(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/getWarehouseStockInRecordByPage`, params)
+        .then(response => {
+          var result = response.data;
+          that.stockInRecords.stockInRecords = that.changeStockInPlan(result);
+        })
+        .catch(error => {
+          console.log(error);
+        }); 
+    },
     // 根据入库单号获取入库记录明细
     getWarehouseStockInRecordDetailByEntrySerialNo(params){
       const that = this;
@@ -420,10 +555,78 @@ export default {
           console.log(`加载明细成功，加载流水号为：`, params.entrySerialNo);
         })
     },
-    // 改变入库计划显示内容
-    changeStockInPlan(result){
-      
+    // 显示搜索结果
+    showSearchResults(result, page, size){
+      const that = this;
+      that.stockInRecordDetails.hasStockInRecordDetails = false;
+      var showResults = [];
+      var lenth = that.stockInRecords.pagination.total;
+      var startNum = (page - 1) * size;
+      var endNum = startNum + size;
+      console.log(`endNum: ` + endNum);
+      if (endNum > lenth){
+        endNum = lenth;
+      }
+      for (var i = startNum; i < endNum; i++){
+        showResults.push(result[i]);
+      }
+      that.stockInRecords.stockInRecords = that.changeStockInPlan(showResults);
     },
+    // 根据条件搜索相应的入库记录
+    searchStockInRecordByParams(params){
+      const that = this;
+      that.controlData.searchControl = true;
+      var jsonLength = 0;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/searchStockInRecordByParams`, params)
+        .then(response => {
+          for (var item in response.data){
+            jsonLength++;
+          }
+          that.stockInRecords.pagination.total = jsonLength;
+          console.log(`总共搜索出`+ that.stockInRecords.pagination.total + `条数据`);
+          that.stockInRecords.stockInSearchResults = response.data;
+          console.log(that.stockInRecords.stockInSearchResults);
+          var page = that.stockInRecords.pagination.currentPage;
+          var number = that.stockInRecords.pagination.pageSize;
+          that.showSearchResults(that.stockInRecords.stockInSearchResults, page, number);
+        })
+        .catch(error => {
+          console.log(error);
+        });  
+    },
+    // 搜集搜索条件
+    collectSearchOptions(){
+      let result = {};
+      const that = this;
+      result["entryType"] = parseInt(that.paramsType);
+      for (let key in that.searchOptions.searchParams){
+        if (that.searchOptions.searchParams[key] !== "") {
+          if (key === "warehouse"){
+            result["warehouseId"] = that.searchOptions.searchParams[key];
+          }
+          else if(key === "operUser"){
+            result["operUserId"] = that.searchOptions.searchParams[key];
+          }
+          else if (key === "delivery"){
+            result["deliveryId"] = that.searchOptions.searchParams[key];
+          }
+          else if (key === "dateRange"){
+            var dateRange = that.searchOptions.searchParams[key];
+            var DateStart = that.changeDate(dateRange[0]);
+            result["DateStart"] = DateStart;
+            var DateEnd = that.changeDate(dateRange[1]);
+            result["DateEnd"] = DateEnd;
+          }
+          else {
+            result[key] = that.searchOptions.searchParams[key];
+          }
+        }
+      }
+      console.log(result);
+      return result;
+    },
+
     // ------------------------------------ 业务函数 ------------------------------------
     // 点击表格显示明细
     handleRecordTableClick(row, event, column){
@@ -434,10 +637,77 @@ export default {
         let params = {
           entrySerialNo: row.entrySerialNo,
         }
-        that.getWarehouseStockInRecordDetailByEntrySerialNo(entrySerialNo);
+        console.log(params);
+        that.getWarehouseStockInRecordDetailByEntrySerialNo(params);
       }
+    },
+    // 当前页码改变时触发函数
+    handleCurrentChange(val) {
+      const that = this;
+      console.log(`页码改变，当前页为: ${val}`);
+      that.stockInRecords.pagination.currentPage = val;
+      if (that.controlData.searchControl === false){
+        let params = {
+          page : that.stockInRecords.pagination.currentPage,
+          number : that.stockInRecords.pagination.pageSize,
+          entryType : parseInt(that.paramsType)
+        }
+        console.log(`根据页码获取数据`);
+        that.getWarehouseStockInRecordByPage(params);
+      }
+      else if (that.controlData.searchControl === true){
+        console.log(`根据页码获取搜索到的数据`);
+        var page = that.stockInRecords.pagination.currentPage;
+        var number = that.stockInRecords.pagination.pageSize;
+        that.showSearchResults(that.stockInRecords.stockInSearchResults,page,number);
+      }
+    },
+    // 每页条数改变时触发函数
+    handleSizeChange(val){
+      const that = this;
+      console.log(`每页 ${val} 条`);
+      that.stockInRecords.pagination.pageSize = val;
+      if (that.controlData.searchControl == false){
+        let params = {
+          page : that.stockInRecords.pagination.currentPage,
+          number : that.stockInRecords.pagination.pageSize,
+          entryType : parseInt(that.paramsType)
+        }
+        console.log(`根据条数刷新数据`);
+        that.getWarehouseStockInRecordByPage(params);
+      }
+      else if (that.controlData.searchControl === true){
+        console.log(`根据条数刷新搜索到的数据`);
+        var page = that.stockInRecords.pagination.currentPage;
+        var number = that.stockInRecords.pagination.pageSize;
+        that.showSearchResults(that.stockInRecords.stockInSearchResults,page,number);
+      }
+    },
+    // 搜索按键点击触发
+    handleRecordTableSearch(){
+      const that = this;
+      console.log(`搜索按钮点击`);
+      let params = that.collectSearchOptions();
+      console.log(`条件搜集完毕`);
+      that.searchStockInRecordByParams(params);
     }
   },
+  // 监控paramsType的变化
+  watch: {
+    paramsType: function (val) {
+      const that = this;
+      console.log(`paramsType`, val);
+      if (val === that.preDefinedType) {
+        let params = {
+          page : 1,
+          number : that.stockInRecords.pagination.pageSize,
+          entryType : parseInt(that.paramsType)
+        }
+        that.getAllWarehouseStockInRecordByEntryType(params);
+        that.getWarehouseStockInRecordByPage(params);
+      }
+    }
+  }
 }
 </script>
 

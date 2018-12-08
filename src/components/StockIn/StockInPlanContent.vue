@@ -358,6 +358,7 @@ export default {
             },
             controlData: {
                 searchControl: false,
+                // hasUpdated: false,
             },
         };
     },
@@ -417,7 +418,7 @@ export default {
         // 改变入库计划显示内容
         changeStockInPlan(result){
             for (var i = 0; i < result.length; i++){
-                var thisResult = result[i]
+                var thisResult = result[i];
                 if (thisResult.hasOwnProperty("entryType")){
                     // console.log(`i = `+ i);
                     var stockInType = "";
@@ -555,7 +556,7 @@ export default {
             console.log(result);
             return result;
         },
-        // 根据页码获取所有的入库计划
+        // 根据页码获取对应的入库计划
         getStockInPlanByPage(params, callback){
             const that = this;
             that.$axios
@@ -681,26 +682,26 @@ export default {
         },
         // ------------------------------------ 业务函数 ------------------------------------
         // 通过paramsType和页码更新数据
-        updatePlanTableData() {
-            const that = this;
-            console.log("in update");
-            if (that.controlData.hasUpdated === false){
-                let params = {
-                    page : 1,
-                    number : that.plans.pagination.pageSize,
-                    entryType : that.paramsType
-                };
-                that.getStockInPlanByPage(params, () => {
-                    that.controlData.hasUpdated = true;
-                })
-            }
-            else {
-                params['page'] = that.plans.pagination.currentPage;
-                params['number'] = that.plans.pagination.pageSize;
-                params['entryType'] = that.paramsType;
-                that.getStockInPlanByPage(params);
-            }
-        },
+        // updatePlanTableData() {
+        //     const that = this;
+        //     console.log("in update");
+        //     if (that.controlData.hasUpdated === false){
+        //         let params = {
+        //             page : 1,
+        //             number : that.plans.pagination.pageSize,
+        //             entryType : that.paramsType
+        //         };
+        //         that.getStockInPlanByPage(params, () => {
+        //             that.controlData.hasUpdated = true;
+        //         })
+        //     }
+        //     else {
+        //         params['page'] = that.plans.pagination.currentPage;
+        //         params['number'] = that.plans.pagination.pageSize;
+        //         params['entryType'] = that.paramsType;
+        //         that.getStockInPlanByPage(params);
+        //     }
+        // },
         // 点击本行的收货触发函数
         handlePlanTableReceiveFunction(row) {
             const that = this;
@@ -741,7 +742,7 @@ export default {
                 let params = {
                     planSerialNo: row.planSerialNo
                 }
-                that.getStockInPlanDetailByPlanSerialNo(params)
+                that.getStockInPlanDetailByPlanSerialNo(params);
                 // that.planDetails.hasPlanDetails = true;
             }
         },
