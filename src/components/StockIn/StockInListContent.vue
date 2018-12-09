@@ -623,6 +623,7 @@ export default {
           }
         }
       }
+      console.log(`搜索条件如下`);
       console.log(result);
       return result;
     },
@@ -690,7 +691,20 @@ export default {
       let params = that.collectSearchOptions();
       console.log(`条件搜集完毕`);
       that.searchStockInRecordByParams(params);
+    },
+    // 点击本行的上架
+    handleSheftFunction(row){
+      const that = this;
+      console.log(`row = `, row);
+      console.log(`点击了本行的上架`);
+    },
+    // 点击本行的确认入库
+    handleVerifyFunction(row){
+      const that = this;
+      console.log(`row = `, row);
+      console.log(`点击了本行的确认入库`);
     }
+
   },
   // 监控paramsType的变化
   watch: {

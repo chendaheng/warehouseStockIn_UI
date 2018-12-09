@@ -367,7 +367,7 @@ export default {
         console.log(`paramsType`, that.paramsType);
         console.log(`preDefinedType`, that.preDefinedType);
         if (that.preDefinedType === that.paramsType) {
-            console.log('获取类型'+that.paramsType+'的所有入库计划')
+            console.log('获取类型'+that.paramsType+'的所有入库计划');
             let params = {
                 page : 1,
                 number : that.plans.pagination.pageSize,
@@ -673,8 +673,7 @@ export default {
                     }
                     else {
                         result[key] = that.searchOptions.searchParams[key];
-                    }
-                    
+                    } 
                 }
             }
             console.log(result);
@@ -725,11 +724,13 @@ export default {
         },
         // 点击本行的检验触发函数
         handlePlanTableTestFunction(row) {  
+            const that = this;
             console.log(`row = `, row);
             console.log(`点击了本行的检验按钮`);
         },
         // 点击本行的入库触发函数
         handlePlanTableStockInFunction(row) {
+            const that = this;
             console.log(`row = `, row);
             console.log(`点击了本行的入库按钮`);
         },

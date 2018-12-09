@@ -312,6 +312,10 @@ export default {
           {
             value: 3,
             label: "超量到货"
+          },
+          {
+            value: 100,
+            label: "非计划收货"
           }
         ],
         vouchTypeOptions:[
@@ -357,7 +361,7 @@ export default {
   },
   created: function (){
     const that = this;
-    console.log("进入收货画面")
+    console.log("进入收货画面");
     console.log(`route` + that.$route);
     that.controlData.isFromPlan = false;
     var result = {};
@@ -496,6 +500,7 @@ export default {
         .catch(error => {
           console.log(`新增收货记录失败`);
         });
+        // 有个问题 没有判断是否真正成功
         that.controlData.isAddreceivingRecord = true;
         console.log(that.controlData.isAddreceivingRecord);
     },
@@ -632,8 +637,6 @@ export default {
       that.addReceivingRecord(receivingRecordParams);
       // console.log(that.controlData.isAddreceivingRecord);
       // that.controlData.isAddreceivingRecord = true;
-
-      
       if(that.controlData.isAddreceivingRecord == true){
         // 新增检验记录
         let qualityTestRecordParams = {
@@ -690,8 +693,6 @@ export default {
         console.log("入库计划更新params");
         console.log(updateParams);
         that.updateStockInPlanByParams(updateParams);
-
-
         that.controlData.receivingCount += 1;
         console.log(that.controlData.receivingCount);
       }

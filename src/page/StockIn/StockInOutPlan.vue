@@ -4,10 +4,10 @@
       <el-row :gutter="20">
         <el-col :span="8">
           <div class="bar">
-            <div class="title">关联单据</div>
-            <el-select v-model="outPlanReceive.params.vouchSerialNo1" clearable placeholder="请选择">
+            <div class="title">关联类型</div>
+            <el-select v-model="outPlanReceive.params.vouchType" clearable placeholder="请选择">
               <el-option 
-                v-for="item in outPlanReceive.options.vouchSerialNo1Options"
+                v-for="item in outPlanReceive.options.vouchTypeOptions"
                 :key="item.value"
                 :label="item.label"
                 :value="item.value">
@@ -18,17 +18,17 @@
         <el-col :span="8">
           <div class="bar">
             <div class="title">关联单号</div>
-            <el-input v-model="outPlanReceive.params.vouchSerialNo2" clearable placeholder="请输入"></el-input>
+            <el-input v-model="outPlanReceive.params.vouchSerialNo" clearable placeholder="请输入"></el-input>
           </div>
         </el-col>
-      </el-row>
-      <el-row :gutter="20">
         <el-col :span="8">
           <div class="bar">
             <div class="title">到货日期</div>
             <el-date-picker v-model="outPlanReceive.params.receivingDate" type="date" placeholder="请选择日期"></el-date-picker>
           </div>
         </el-col>
+      </el-row>
+      <el-row :gutter="20">
         <el-col :span="8">
           <div class="bar">
             <div class="title">接收仓库</div>
@@ -55,8 +55,6 @@
             </el-select>
           </div>
         </el-col>
-      </el-row>
-      <el-row :gutter="20">
         <el-col :span="8">
           <div class="bar">
             <div class="title">收货人</div>
@@ -70,6 +68,8 @@
             </el-select>            
           </div>
         </el-col>
+      </el-row>
+      <el-row :gutter="20">
         <el-col :span="8">
           <div class="bar">
             <div class="title">发货单位</div>
@@ -95,6 +95,12 @@
               </el-option>
             </el-select>
           </div>
+        </el-col>
+        <el-col :span="8">
+          <div class="bar">
+            <div class="title">附件id</div>
+            <el-input v-model="outPlanReceive.params.attachmentId" clearable placeholder="请输入"></el-input>
+          </div>
         </el-col>        
       </el-row>
       <el-row :gutter="10">
@@ -105,7 +111,7 @@
           </div>
         </el-col>
         <el-col :span="4" :offset="2">
-          <el-button type="primary">确认收货</el-button>
+          <el-button type="primary" @click="receiveClick()">确认收货信息</el-button>
         </el-col>
       </el-row>
     </el-card>
@@ -116,6 +122,9 @@
         </el-col>
         <el-col :span="2">
           <el-button type="danger" size="medium">删除</el-button>
+        </el-col>
+        <el-col :span="4" :offset="15">
+          <el-button type="primary" @click="receiveDetailClick()">确认收货明细</el-button>
         </el-col>
       </el-row>
       <el-table
@@ -165,22 +174,106 @@ export default {
     return {
       outPlanReceive: {
         params: {
-          vouchSerialNo1: '',
-          vouchSerialNo2: '',
-          receivingDate: '',
-          warehouse: '',
-          receivingAddr: '',
-          operUser: '',
-          delivery: '',
-          deliveryAddr: '',
+          vouchType: "",
+          vouchSerialNo: "",
+          receivingDate: "",
+          warehouse: "",
+          receivingAddr: "",
+          operUser: "",
+          delivery: "",
+          deliveryAddr: "",
+          attachmentId: 0,
+          note: "",
         },
         options: {
-          vouchSerialNo1Options: [],
-          warehouseOptions: [],
-          receivingAddrOptions: [],
-          operUserOptions: [],
-          deliveryOptions: [],
-          deliveryAddrOptions: [],
+          vouchTypeOptions: [
+            {
+              value: 1,
+              label: "采购单号"
+            },
+            {
+              value: 2,
+              label: "委托加工单号"
+            },
+            {
+              value: 3,
+              label: "生产单号"
+            },
+            {
+              value: 4,
+              label: "销售单号"
+            },
+            {
+              value: 5,
+              label: "生产退回单号"
+            },
+            {
+              value: 6,
+              label: "其他入库单号"
+            }
+          ],
+          warehouseOptions: [
+            {
+              value: 3331,
+              label: "仓库1"
+            },
+            {
+              value: 3332,
+              label: "仓库2"
+            },
+            {
+              value: 3333,
+              label: "仓库3"
+            }
+          ],
+          receivingAddrOptions: [
+            {
+              value: 33100,
+              label: "接收地址1"
+            },
+            {
+              value: 33200,
+              label: "接收地址2"
+            },
+            {
+              value: 33300,
+              label: "接收地址3"
+            },
+          ],
+          operUserOptions: [
+            {
+              value: 3301,
+              label: "收货人1"
+            },
+            {
+              value: 3302,
+              label: "收货人2"
+            },
+            {
+              value: 3303,
+              label: "收货人3"
+            }
+          ],
+          deliveryOptions: [
+            {
+              value: 66601,
+              label: "苏州供应商"
+            },
+            {
+              value: 66602,
+              label: "无锡供应商"
+            },
+          ],
+          deliveryAddrOptions: [
+            {
+              value: 666010,
+              label: "苏州制造工厂"
+            },
+            {
+              value: 666020,
+              label: "无锡制造工厂"
+            },
+          ],
         }
       },
       value: '',
@@ -204,9 +297,179 @@ export default {
           note: '',
         }
       ],
+      controlData:{
+        receivingCount: 0,
+        qualityTestCount: 0,
+        isAddreceivingRecord: false,
+        isAddreceivingRecordDetail: false,
+      },
+    };
+  },
+  created: function (){
+    const that = this;
+    console.log("进入非计划收货画面");
+    that.controlData.isAddreceivingRecord = false;
+    that.controlData.isAddreceivingRecordDetail = false;
+    console.log("重置标志位成功");
+    that.getLastReceivingRecord();
+    that.getLastQualityTestRecordId();
+  },
+  methods: {
+    // ------------------------------------ 工具函数 ------------------------------------
+    changeDate(date){
+      var y = date.getFullYear(); 
+      var m = date.getMonth() + 1; 
+      m = m < 10 ? ('0' + m) : m;  
+      var d = date.getDate();  
+      d = d < 10 ? ('0' + d) : d;  
+      var h = date.getHours();  
+      var minute = date.getMinutes();
+      minute = minute < 10 ? ('0' + minute) : minute; 
+      var second= date.getSeconds();
+      second = minute < 10 ? ('0' + second) : second;  
+      return y + '-' + m + '-' + d+' '+h+':'+minute+':'+ second;  
+    },
+    // 获取最后一条收货记录的id
+    getLastReceivingRecord(){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/getLastReceivingRecordId`)
+        .then(response => {
+          // console.log(response.data);
+          that.controlData.receivingCount = parseInt(response.data) + 1;
+          console.log("receivingCount:" + that.controlData.receivingCount);
+          console.log(`获取最后一条收货记录的id成功`);
+        })
+        .catch(error => {
+          console.log(`获取最后一条收货记录的id失败`);
+        });
+    },
+    // 获取最后一条检验记录的id
+    getLastQualityTestRecordId(){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/getLastQualityTestRecordId`)
+        .then(response => {
+          // console.log(response.data);
+          that.controlData.qualityTestCount = parseInt(response.data) + 1;
+          console.log("qualityTestCount:" + that.controlData.qualityTestCount);
+          console.log(`获取最后一条检验记录的id成功`);
+        })
+        .catch(error => {
+          console.log(`获取最后一条检验记录的id失败`);
+        });
+    },
+    // 新增收货记录
+    addReceivingRecord(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/addReceivingRecord`, params)
+        .then(response => {
+          // console.log(response.data);
+          console.log(`成功新增`+ (response.data).toString() +`条收货记录`);
+        })
+        .catch(error => {
+          console.log(`新增收货记录失败`);
+        });
+        that.controlData.isAddreceivingRecord = true;
+        console.log(that.controlData.isAddreceivingRecord);
+    },
+    // 新增收货记录明细
+    addReceivingRecordDetail(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/addReceivingRecordDetail`, params)
+        .then(response => {
+          if(response.data == -1){
+            console.log(`新增收货记录明细失败`);
+          }
+          else{
+            console.log(`成功新增`+ (response.data).toString() +`条收货记录明细`);
+            that.controlData.isAddreceivingRecordDetail = true;
+          }
+        })
+        .catch(error => {
+          console.log(`新增收货记录明细失败`);
+        });
+    },
+    // 新增检验记录
+    addQualityTestRecord(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/addQualityTestRecord`, params)
+        .then(response => {
+          if(response.data == -1){
+            console.log(`新增检验记录失败`);
+          }
+          else{
+            console.log(`成功新增`+ (response.data).toString() +`条检验记录`);
+          }
+        })
+        .catch(error => {
+          console.log(`新增检验记录失败`);
+        });
+    },
+    // 新增检验记录明细
+    addQualityTestRecordDetail(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/addQualityTestRecordDetail`, params)
+        .then(response => {
+          if(response.data == -1){
+            console.log(`新增检验记录明细失败`);
+          }
+          else{
+            console.log(`成功新增`+ (response.data).toString() +`条检验记录明细`);
+          }
+        })
+        .catch(error => {
+          console.log(`新增检验记录明细失败`);
+        });
+    },
+    // ------------------------------------ 业务函数 ------------------------------------
+    // 确认收货信息
+    receiveClick(){
+      const that = this;
+      console.log(`确认收货信息按钮点击`);
+      var receivingRecordsData = that.outPlanReceive.params;
+      var date = that.changeDate(receivingRecordsData.receivingDate);
+      // 新增收货记录
+      let receivingRecordParams = {
+        receivingSerialNo: "receive" + (that.controlData.receivingCount).toString(),
+        planSerialNo: "noPlan",
+        vouchSerialNo: receivingRecordsData.vouchType,
+        vouchType: receivingRecordsData.vouchType,
+        entryType: receivingRecordsData.vouchType, // entryType和vouchType一样
+        deliveryId: receivingRecordsData.delivery,
+        deliveryAddrId: receivingRecordsData.deliveryAddr,
+        receivingDate: date,
+        warehouseId: receivingRecordsData.warehouse,
+        receivingAddrId: receivingRecordsData.receivingAddr,
+        operUserId: receivingRecordsData.operUser, 
+        attachmentId: receivingRecordsData.attachmentId,
+        note: receivingRecordsData.note, 
+        noPlanFlag: 0,
+      }
+      console.log("收货记录params");
+      console.log(receivingRecordParams);
+      that.addReceivingRecord(receivingRecordParams);
+      if(that.controlData.isAddreceivingRecord == true){
+        // 新增检验记录
+        let qualityTestRecordParams = {
+          qualityTestSerialNo: "test" + (that.controlData.qualityTestCount).toString(),
+          receivingSerialNo: "receive" + (that.controlData.receivingCount).toString(),
+        }
+        console.log("检验记录params");
+        console.log(qualityTestRecordParams);
+        that.addQualityTestRecord(qualityTestRecordParams);
+      }
+    },
+    // 确认收货明细
+    receiveDetailClick(){
+      const that = this;
+      console.log(`确认收货明细按钮点击`);
     }
   }
-  
 }
 </script>
 

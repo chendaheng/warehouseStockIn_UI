@@ -40,7 +40,7 @@ export default {
     },
     methods: {
         changeStockInType (tab, event) {
-        this.stockInType = tab.name;
+            this.stockInType = tab.name;
         }
     }
 }

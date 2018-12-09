@@ -491,7 +491,7 @@ export default {
         that.updateQualityTestRecordDetail(qualityTestRecordDetailParams);
       }
       let getFlagParams = {
-          qualityTestSerialNo: thisData.qualityTestSerialNo,
+          qualityTestSerialNo: updateTestRecordDetailData[0].qualityTestSerialNo,
         }
       that.isAllMaterialGetTest(getFlagParams);
     }
