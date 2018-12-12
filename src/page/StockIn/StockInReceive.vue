@@ -314,7 +314,7 @@ export default {
             label: "超量到货"
           },
           {
-            value: 100,
+            value: 4,
             label: "非计划收货"
           }
         ],

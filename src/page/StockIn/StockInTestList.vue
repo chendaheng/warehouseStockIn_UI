@@ -635,8 +635,17 @@ export default {
     },
     //点击入库
     handleTestTableStockInFunction(row){
+      const that = this;
       console.log(`row = `, row);
       console.log(`点击了本行的入库按钮`);
+      that.$router.push({
+        path: `/StockIn/StockInPurchase`,
+        query: {
+          qualityTestSerialNo: row.qualityTestSerialNo,
+          isFromPlan: false,
+          isFromTest: true,
+        }
+      });
     },
     // 搜索按钮点击
     handleTestTableSearch(){

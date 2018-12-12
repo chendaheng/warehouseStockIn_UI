@@ -733,6 +733,19 @@ export default {
             const that = this;
             console.log(`row = `, row);
             console.log(`点击了本行的入库按钮`);
+            that.$router.push({
+                 path: `/StockIn/StockInPurchase`,
+                 query: {
+                     planSerialNo: row.planSerialNo,
+                     entryType: row.entryType,
+                     vouchSerialNo: row.vouchSerialNo,
+                     vouchType: row.vouchType,
+                     warehouseId: row.warehouseId,
+                     deliveryId: row.deliveryId,
+                     isFromPlan: true,
+                     isFromTest: false,
+                 }
+            });
         },
         // 点击表格显示明细
         handlePlanTableClick(row, event, column){
