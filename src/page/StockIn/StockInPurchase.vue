@@ -301,8 +301,8 @@ export default {
     that.getLastStockInRecordId();
     if(that.controlData.isFromPlan == true){
       console.log("数据从计划页面读取");
-      that.warehouseStockInRecord.params = result;
       var i = 0;
+      that.warehouseStockInRecord.params = result;
       for (let key in that.warehouseStockInRecord.params){
         if (key === "warehouseId"){
           that.warehouseStockInRecord.params.warehouse = parseInt(result["warehouseId"]);
@@ -310,18 +310,18 @@ export default {
         if (key === "deptId"){
           that.warehouseStockInRecord.params.dept = parseInt(result["deptId"]);
         }
-        if (key === "operUserId"){
-          that.warehouseStockInRecord.params.operUser = parseInt(result["operUserId"]);
-        }
         if (key === "deliveryId"){
           that.warehouseStockInRecord.params.delivery = parseInt(result["deliveryId"]);
         }
       }
+      
+      
       console.log("所加载的入库记录信息如下");
       console.log(that.warehouseStockInRecord.params);
+      console.log(that.warehouseStockInRecord.params.warehouse);
       let params = {
           planSerialNo: result["planSerialNo"],
-          needEntryQuantity: 1
+          // needEntryQuantity: 1
       }
       that.getStockInPlanDetailByPlanSerialNo(params);
       // that.init();
@@ -340,16 +340,18 @@ export default {
     if(that.controlData.isFromTest == true){
       console.log("数据从检验列表页面读取");
       var qualityTestSerialNo = result["qualityTestSerialNo"];
+      
       let params = {
         qualityTestSerialNo: qualityTestSerialNo
       }
-      that.getPlanByQualityTestSerialNo(params);
-      let newParams = {
-          planSerialNo : that.warehouseStockInRecord.params.planSerialNo,
-          needEntryQuantity: 1
-      }
-      that.sleep(1000);
-      that.getStockInPlanDetailByPlanSerialNo(newParams);
+      that.getPlanDataByQualityTestSerialNo(params);
+
+      // let newParams = {
+      //     planSerialNo : that.warehouseStockInRecord.params.planSerialNo,
+      //     needEntryQuantity: 1
+      // }
+      // that.sleep(1000);
+      // that.getStockInPlanDetailByPlanSerialNo(newParams);
       // let newParams = {
       //   planSerialNo : that.warehouseStockInRecord.params.planSerialNo
       // }
@@ -483,6 +485,7 @@ export default {
           for (var i = 0; i < result.length; i++){
             var thisResult = result[i];
             result[i]["note"] = "";
+            result[i]["materialName"] = "商品名称" + result[i]["materialCode"];
             if (thisResult.hasOwnProperty("specification")){ // 规格
               var format = thisResult["specification"];
               result[i]["format"] = format.toString();
@@ -493,6 +496,7 @@ export default {
             }
           }
           that.warehouseStockInRecord.details = result;
+          that.warehouseStockInRecord.params.entrySerialNo = "entry" + (that.controlData.stockInCount).toString();
           console.log(`加载计划部分读取的明细成功，加载流水号为：`, params.planSerialNo);
         })
         .catch(error => {
@@ -523,32 +527,59 @@ export default {
           console.log(`新增入库记录明细失败`);
         });
     },
-    //根据检验单号获取入库计划
-    getPlanByQualityTestSerialNo(params){
+    //根据检验单号获取入库计划信息
+    getPlanDataByQualityTestSerialNo(params){
       const that = this;
       that.$axios
-        .post(`http://localhost:8090/wareHouse/stockIn/getPlanByQualityTestSerialNo`, params)
+        .post(`http://localhost:8090/wareHouse/stockIn/getPlanDataByQualityTestSerialNo`, params)
         .then(response => {
           var result = response.data;
-          if (result.hasOwnProperty("planSerialNo")){
-            result["planSerialNo"] = result["planSerialNo"];
+          // 计划数据
+          var planData = result[0];
+          planData[0]["operUserId"] = "";
+          planData[0]["entrySerialNo"] = "entry" + (that.controlData.stockInCount).toString();
+          if (planData[0].hasOwnProperty("planSerialNo")){
+            planData[0]["planSerialNo"] = planData[0]["planSerialNo"];
           }
-          if (result.hasOwnProperty("entryType")){
-            result["entryType"] = result["entryType"];
+          if (planData[0].hasOwnProperty("entryType")){
+            planData[0]["entryType"] = planData[0]["entryType"];
           }
-          if (result.hasOwnProperty("vouchSerialNo")){
-            result["vouchSerialNo"] = result["vouchSerialNo"];
+          if (planData[0].hasOwnProperty("vouchSerialNo")){
+            planData[0]["vouchSerialNo"] = planData[0]["vouchSerialNo"];
           }
-          if (result.hasOwnProperty("vouchType")){
-            result["vouchType"] = result["vouchType"];
+          if (planData[0].hasOwnProperty("vouchType")){
+            planData[0]["vouchType"] = planData[0]["vouchType"];
           }
-          if (result.hasOwnProperty("warehouseId")){
-            result["warehouse"] = result["warehouseId"];
+          if (planData[0].hasOwnProperty("warehouseId")){
+            planData[0]["warehouse"] = planData[0]["warehouseId"];
           }
-          if (result.hasOwnProperty("deliveryId")){
-            result["delivery"] = result["deliveryId"];
+          if (planData[0].hasOwnProperty("deliveryId")){
+            planData[0]["delivery"] = planData[0]["deliveryId"];
           }
-          that.warehouseStockInRecord.params = result;
+          console.log(`显示的计划数据如下`);
+          console.log(planData[0]);
+          that.warehouseStockInRecord.params = planData[0];
+          
+          // 计划明细数据
+          var planDetailData = result[1];
+          console.log(planDetailData);
+          for (var i = 0; i < planDetailData.length; i++){
+            var thisResult = planDetailData[i];
+            // console.log(`thisResult`);
+            // console.log(thisResult);
+            planDetailData[i]["note"] = "";
+            planDetailData[i]["materialName"] = "商品名称" + planDetailData[i]["materialCode"];
+            if (thisResult.hasOwnProperty("specification")){ // 规格
+              var format = thisResult["specification"];
+              planDetailData[i]["format"] = format.toString();
+            }
+            if (thisResult.hasOwnProperty("unitId")){
+              var unit = thisResult["unitId"];
+              planDetailData[i]["unit"] = "计量单位" + unit.toString();
+            }
+          }
+          that.warehouseStockInRecord.details = planDetailData;
+          
           console.log(`获取的入库计划流水号：` + that.warehouseStockInRecord.params.planSerialNo);
         })
         .catch(error => {
@@ -563,7 +594,7 @@ export default {
       var stockInData = that.warehouseStockInRecord.params;
       var date = that.changeDate(stockInData.entryDate);
       let stockInParams = {
-        entrySerialNo:  "entry" + (that.controlData.stockInCount).toString(),
+        entrySerialNo:  stockInData.entrySerialNo,
         entryType: stockInData.entryType,
         vouchSerialNo: stockInData.vouchSerialNo,
         vouchType: stockInData.vouchType,

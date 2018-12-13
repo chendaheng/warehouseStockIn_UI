@@ -630,6 +630,8 @@ export default {
         query: {
           qualityTestSerialNo: row.qualityTestSerialNo,
           receivingSerialNo: row.receivingSerialNo,
+          isFromPlan: false,
+          isFromTest: true,
         },
       });
     },

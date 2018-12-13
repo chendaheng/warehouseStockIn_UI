@@ -705,47 +705,95 @@ export default {
         handlePlanTableReceiveFunction(row) {
             const that = this;
             console.log(`row = `, row);
-            console.log(`点击了本行的收货按钮`);
-            that.$router.push({
-                path: `/StockIn/StockInReceive`,
-                query: {
-                    planSerialNo: row.planSerialNo,
-                    entryType: row.entryType,
-                    vouchType: row.vouchType,
-                    vouchSerialNo: row.vouchSerialNo,
-                    warehouseId: row.warehouseId,
-                    receivingAddrId: row.receivingAddrId,
-                    operUserId: row.operUserId,
-                    deliveryId: row.deliveryId,
-                    deliveryAddrId: row.deliveryAddrId,
-                    isFromPlan: true,
-                },
-            });
+            var thisStatus = row.status;
+            console.log(`该计划的状态标志为` + row.status);
+            if (thisStatus === 0){
+                console.log(`点击了本行的收货按钮，页面跳转`);
+                that.$router.push({
+                    path: `/StockIn/StockInReceive`,
+                    query: {
+                        planSerialNo: row.planSerialNo,
+                        entryType: row.entryType,
+                        vouchType: row.vouchType,
+                        vouchSerialNo: row.vouchSerialNo,
+                        warehouseId: row.warehouseId,
+                        receivingAddrId: row.receivingAddrId,
+                        operUserId: row.operUserId,
+                        deliveryId: row.deliveryId,
+                        deliveryAddrId: row.deliveryAddrId,
+                        isFromPlan: true,
+                    },
+                });
+            }
+            if (thisStatus === 1){
+                console.log(`该计划已经收货,无法进行收货操作`);
+            }
+            if (thisStatus === 2){
+                console.log(`该计划已经检验,无法进行收货操作`);
+            }
+            if (thisStatus === 3){
+                console.log(`该计划已经入库,无法进行收货操作`);
+            }
+            
         },
         // 点击本行的检验触发函数
         handlePlanTableTestFunction(row) {  
             const that = this;
-            console.log(`row = `, row);
-            console.log(`点击了本行的检验按钮`);
+            // console.log(`row = `, row);
+            var thisStatus = row.status;
+            console.log(`该计划的状态标志为` + row.status);
+            if (thisStatus === 0){
+                console.log(`该计划未收货，请先进行收货操作`);
+            }
+            if (thisStatus === 1){
+                console.log(`点击了本行的检验按钮，页面跳转`);
+                that.$router.push({
+                    path: `/StockIn/StockInTest`,
+                    query: {
+                        planSerialNo: row.planSerialNo,
+                        isFromPlan: true,
+                        isFromTest: false,
+                    }
+                });
+            }
+            if (thisStatus === 2){
+                console.log(`该计划已经检验,无法进行检验操作`);
+            }
+            if (thisStatus === 3){
+                console.log(`该计划已经入库,无法进行检验操作`);
+            }    
         },
         // 点击本行的入库触发函数
         handlePlanTableStockInFunction(row) {
             const that = this;
             console.log(`row = `, row);
-            console.log(`点击了本行的入库按钮`);
-            that.$router.push({
-                 path: `/StockIn/StockInPurchase`,
-                 query: {
-                     planSerialNo: row.planSerialNo,
-                     entryType: row.entryType,
-                     vouchSerialNo: row.vouchSerialNo,
-                     vouchType: row.vouchType,
-                     warehouseId: row.warehouseId,
-                     deliveryId: row.deliveryId,
-                     isFromPlan: true,
-                     isFromTest: false,
-                 }
-            });
+            var thisStatus = row.status;
+            console.log(`该计划的状态标志为` + row.status);
+            if (thisStatus === 0){
+                console.log(`该计划未收货，请先进行收货操作`);
+            }
+            if (thisStatus === 1){
+                console.log(`该计划未检验，请先进行检验操作`);
+            }
+            if (thisStatus === 2){
+                console.log(`点击了本行的入库按钮，页面跳转`);
+                that.$router.push({
+                    path: `/StockIn/StockInPurchase`,
+                    query: {
+                        planSerialNo: row.planSerialNo,
+                        entryType: row.entryType,
+                        vouchSerialNo: row.vouchSerialNo,
+                        vouchType: row.vouchType,
+                        warehouseId: row.warehouseId,
+                        deliveryId: row.deliveryId,
+                        isFromPlan: true,
+                        isFromTest: false,
+                    }
+                });
+            }
+            if (thisStatus === 3){
+                console.log(`该计划已经入库,无法进行入库操作`);
+            }  
         },
         // 点击表格显示明细
         handlePlanTableClick(row, event, column){

@@ -687,7 +687,7 @@ export default {
         var arrivalDate = that.changeDate(that.receivingRecords.receivingRecordInputs.receivingDate);
         let updateParams = {
           planSerialNo: that.receivingRecords.receivingRecordInputs.planSerialNo,
-          operation: 0,
+          operation: 1,
           arrivalDate: arrivalDate,
         }
         console.log("入库计划更新params");

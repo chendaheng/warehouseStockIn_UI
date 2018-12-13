@@ -238,6 +238,7 @@ export default {
     return {
       qualityTestRecord: {
         params: {
+          planSerialNo: '',
           qualityTestSerialNo: '',
           qualityTestAddr: '',
           operUser: '',
@@ -336,6 +337,8 @@ export default {
       multipleSelection: [],
       controlData: {
         isAllMaterialGetTestFlag: 0,
+        isFromPlan: false,
+        isFromTest: false,
       },
     };
   },
@@ -343,14 +346,39 @@ export default {
     const that = this;
     console.log("进入检验画面");
     console.log(`route` + that.$route);
+    that.controlData.isAllMaterialGetTestFlag = 0;
+    that.controlData.isFromPlan = false;
+    that.controlData.isFromTest = false;
     var result = {};
     result = that.$route.query;
-    that.qualityTestRecord.params.qualityTestSerialNo = result["qualityTestSerialNo"];
-    that.qualityTestRecord.params.receivingSerialNo = result["receivingSerialNo"];
-    let params = {
-      qualityTestSerialNo : result["qualityTestSerialNo"],
+    if (result != null){
+      that.controlData.isFromPlan = result["isFromPlan"];
+      that.controlData.isFromTest = result["isFromTest"];
+      // console.log(`isFromPlan控制数据为` + that.controlData.isFromPlan);
+      // console.log(`isFromTest控制数据为` + that.controlData.isFromTest);
     }
-    that.getQualityTestRecordDetailByQualityTestSerialNo(params);
+    console.log(`isFromPlan控制数据为` + that.controlData.isFromPlan);
+    console.log(`isFromTest控制数据为` + that.controlData.isFromTest);
+    if (that.controlData.isFromTest == true){
+      console.log(`数据从检验列表加载`);
+      that.qualityTestRecord.params.qualityTestSerialNo = result["qualityTestSerialNo"];
+      that.qualityTestRecord.params.receivingSerialNo = result["receivingSerialNo"];
+      let params = {
+        qualityTestSerialNo : result["qualityTestSerialNo"],
+      }
+      that.getQualityTestRecordDetailByQualityTestSerialNo(params);
+      that.getPlanSerialNoByQualityTestSerialNo(params);
+    }
+
+    if (that.controlData.isFromPlan == true){
+      console.log(`数据从计划列表加载`);
+      that.qualityTestRecord.params.planSerialNo = result["planSerialNo"];
+      let params = {
+        planSerialNo : result["planSerialNo"],
+      }
+      that.getTestDataByPlanSerialNo(params);
+    }
+    console.log(`当前的数据为` + that.qualityTestRecord.params.qualityTestSerialNo);
   },
   methods: {
     changeCheckBoxFun(val){
@@ -380,10 +408,21 @@ export default {
         .post(`http://localhost:8090/wareHouse/stockIn/updateQualityTestRecord`, params)
         .then(response => {
           console.log(`成功更新`+ (response.data).toString() +`条检验记录`);
-          
         })
         .catch(error => {
           console.log(`更新检验记录失败`);
+        });
+    },
+    // 更新入库计划
+    updateStockInPlanByParams(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/updateStockInPlanByParams`, params)
+        .then(response => {
+          console.log(`成功更新`+ (response.data).toString() +`条入库计划`);
+        })
+        .catch(error => {
+          console.log(`更新入库计划失败`);
         });
     },
     // 根据检验单号获取对应的检验记录明细
@@ -446,6 +485,56 @@ export default {
         if (callback !== undefined)
           return callback();
     },
+    // 根据入库计划流水号获取检验信息
+    getTestDataByPlanSerialNo(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/getTestDataByPlanSerialNo`, params)
+        .then(response => {
+          var result = response.data;
+          console.log(response.data);
+          // 检验记录数据
+          var testData = result[0];
+          if (testData[0].hasOwnProperty("qualityTestSerialNo")){
+            testData[0]["qualityTestSerialNo"] = testData[0]["qualityTestSerialNo"];
+          }
+          if (testData[0].hasOwnProperty("receivingSerialNo")){
+            testData[0]["receivingSerialNo"] = testData[0]["receivingSerialNo"];
+          }
+          console.log(`显示的检验数据如下`);
+          console.log(testData[0]);
+          that.qualityTestRecord.params = testData[0];
+          
+          // 检验记录明细
+          var testDataDetail = result[1];
+          console.log(testDataDetail);
+          for (var i = 0; i < testDataDetail.length; i++){
+            testDataDetail[i]["note"] = "";
+            var thisResult = testDataDetail[i];
+            if (thisResult.hasOwnProperty("unitId")){
+              var unit = thisResult["unitId"];
+              testDataDetail[i]["unit"] = "计量单位" + unit.toString();
+            }
+          }
+          that.qualityTestRecordDetail = testDataDetail;
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
+    // 根据检验单号获取入库计划流水号
+    getPlanSerialNoByQualityTestSerialNo(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/getPlanSerialNoByQualityTestSerialNo`, params)
+        .then(response => {
+          that.qualityTestRecord.params.planSerialNo = response.data;
+          console.log(`根据检验单号获取入库计划流水号为` + that.qualityTestRecord.params.planSerialNo)
+        })
+        .catch(error => {
+          console.log(error);
+        });
+    },
     // ------------------------------------ 业务函数 ------------------------------------
     // 点击确认检验单信息
     TestClick(){
@@ -464,7 +553,7 @@ export default {
         qualityTestDate: date,
         note: updateTestRecordData.note,
       }
-      console.log("检验记录更新Params");
+      console.log("检验记录更新Params如下");
       console.log(qualityTestRecordParams);
       that.updateQualityTestRecord(qualityTestRecordParams);
     },
@@ -486,10 +575,18 @@ export default {
           reason: thisData.reason,
           result: thisData.result,
         }
-        console.log("检验记录明细更新Params");
+        console.log("检验记录明细更新Params如下");
         console.log(qualityTestRecordDetailParams);
         that.updateQualityTestRecordDetail(qualityTestRecordDetailParams);
       }
+      let updatePlanParams = {
+        planSerialNo: that.qualityTestRecord.params.planSerialNo,
+        qualityTestSerialNo: that.qualityTestRecord.params.qualityTestSerialNo,
+        operation: 2
+      }
+      console.log("入库计划更新Params如下");
+      console.log(updatePlanParams);
+      that.updateStockInPlanByParams(updatePlanParams);
       let getFlagParams = {
           qualityTestSerialNo: updateTestRecordDetailData[0].qualityTestSerialNo,
         }
