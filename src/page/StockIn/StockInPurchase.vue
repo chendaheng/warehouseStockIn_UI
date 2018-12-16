@@ -604,7 +604,7 @@ export default {
         deliveryId: stockInData.delivery,
         entryDate: date,
         result: 1,
-        note: stockInData.note
+        // note: stockInData.note
       }
       console.log("入库记录params");
       console.log(stockInParams);
@@ -618,6 +618,7 @@ export default {
           batchCode: result.batchCode,
           unitId: parseInt(result.unitId),
           entryQuantity: result.entryQuantity,
+          restQuantity: result.entryQuantity, // 剩余数量添加记录时和入库数量一样
           price : result.price,
           taxPrice: result.taxPrice,
           // note: result.note
