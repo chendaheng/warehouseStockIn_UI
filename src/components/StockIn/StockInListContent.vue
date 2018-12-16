@@ -697,6 +697,13 @@ export default {
       const that = this;
       console.log(`row = `, row);
       console.log(`点击了本行的上架`);
+      that.$router.push({
+        path: `/StockIn/StockInShelf`,
+        query: {
+          warehouseId: row.warehouseId,
+          entrySerialNo: row.entrySerialNo,
+        }
+      });
     },
     // 点击本行的确认入库
     handleVerifyFunction(row){
