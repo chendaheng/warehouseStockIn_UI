@@ -383,16 +383,19 @@ export default {
           that.receivingRecords.receivingRecordInputs.warehouse = parseInt(result["warehouseId"]);
         }
         if (key === "receivingAddrId"){
-          that.receivingRecords.receivingRecordInputs.receivingAddr = result["receivingAddrId"]
+          that.receivingRecords.receivingRecordInputs.receivingAddr = result["receivingAddrId"];
         }
         if (key === "operUserId"){
-          that.receivingRecords.receivingRecordInputs.operUser = result["operUserId"]
+          that.receivingRecords.receivingRecordInputs.operUser = result["operUserId"];
         }
         if (key === "deliveryId"){
-          that.receivingRecords.receivingRecordInputs.delivery = result["deliveryId"]
+          that.receivingRecords.receivingRecordInputs.delivery = result["deliveryId"];
         }
         if (key === "deliveryAddrId"){
-          that.receivingRecords.receivingRecordInputs.deliveryAddr = result["deliveryAddrId"]
+          that.receivingRecords.receivingRecordInputs.deliveryAddr = result["deliveryAddrId"];
+        }
+        if (key === "note"){
+          that.receivingRecords.receivingRecordInputs.note = "";
         }
       }
       console.log(result);

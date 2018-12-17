@@ -457,6 +457,9 @@ export default {
                     if (parseInt(thisResult["status"]) == 3){
                         planStatus = "已入库"
                     }
+                    if (parseInt(thisResult["status"]) == 4){
+                        planStatus = "确认入库"
+                    }
                     result[i]["planStatus"] = planStatus;
                 }
                 if (thisResult.hasOwnProperty("deptId")){

@@ -313,8 +313,10 @@ export default {
         if (key === "deliveryId"){
           that.warehouseStockInRecord.params.delivery = parseInt(result["deliveryId"]);
         }
+        if (key === "note"){
+          that.warehouseStockInRecord.params.note = "";
+        }
       }
-      
       
       console.log("所加载的入库记录信息如下");
       console.log(that.warehouseStockInRecord.params);
@@ -463,6 +465,18 @@ export default {
 		    return;
 	    }
     },
+    // 更新入库计划
+    updateStockInPlanByParams(params){
+      const that = this;
+      that.$axios
+        .post(`http://localhost:8090/wareHouse/stockIn/updateStockInPlanByParams`, params)
+        .then(response => {
+          console.log(`成功更新`+ (response.data).toString() +`条入库计划`);
+        })
+        .catch(error => {
+          console.log(`更新入库计划失败`);
+        });
+    },
     // 获取最后一条入库记录的id
     getLastStockInRecordId(){
       const that = this;
@@ -537,6 +551,7 @@ export default {
           // 计划数据
           var planData = result[0];
           planData[0]["operUserId"] = "";
+          planData[0]["note"] = "";
           planData[0]["entrySerialNo"] = "entry" + (that.controlData.stockInCount).toString();
           if (planData[0].hasOwnProperty("planSerialNo")){
             planData[0]["planSerialNo"] = planData[0]["planSerialNo"];
@@ -579,7 +594,6 @@ export default {
             }
           }
           that.warehouseStockInRecord.details = planDetailData;
-          
           console.log(`获取的入库计划流水号：` + that.warehouseStockInRecord.params.planSerialNo);
         })
         .catch(error => {
@@ -604,7 +618,7 @@ export default {
         deliveryId: stockInData.delivery,
         entryDate: date,
         result: 1,
-        // note: stockInData.note
+        note: stockInData.note
       }
       console.log("入库记录params");
       console.log(stockInParams);
@@ -621,12 +635,19 @@ export default {
           restQuantity: result.entryQuantity, // 剩余数量添加记录时和入库数量一样
           price : result.price,
           taxPrice: result.taxPrice,
-          // note: result.note
+          note: result.note
         }
         console.log("入库记录明细params");
         console.log(stockInDetailParams);
         that.addWarehouseStockInRecordDetail(stockInDetailParams);
       }
+      console.log(`planSerialNo`,that.warehouseStockInRecord.params.planSerialNo);
+      let updateParams = {
+          planSerialNo: that.warehouseStockInRecord.params.planSerialNo,
+          operation: 3,
+      }
+      console.log("更新入库计划params",updateParams);
+      that.updateStockInPlanByParams(updateParams);
     }
     ///// di
     // createStockInForm() {

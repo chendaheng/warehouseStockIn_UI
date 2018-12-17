@@ -157,7 +157,7 @@
               width="150">
               <template slot-scope="scope">
                 <el-button type="text" size="small" @click="handleSheftFunction(scope.row)">上架</el-button>
-                <el-button type="text" size="small" @click="handleVerifyFunction(scope.row)">确认入库</el-button>
+                <!-- <el-button type="text" size="small" @click="handleVerifyFunction(scope.row)">确认入库</el-button> -->
               </template>
             </el-table-column>
           </el-table>
@@ -705,12 +705,12 @@ export default {
         }
       });
     },
-    // 点击本行的确认入库
-    handleVerifyFunction(row){
-      const that = this;
-      console.log(`row = `, row);
-      console.log(`点击了本行的确认入库`);
-    }
+    // // 点击本行的确认入库
+    // handleVerifyFunction(row){
+    //   const that = this;
+    //   console.log(`row = `, row);
+    //   console.log(`点击了本行的确认入库`);
+    // }
 
   },
   // 监控paramsType的变化

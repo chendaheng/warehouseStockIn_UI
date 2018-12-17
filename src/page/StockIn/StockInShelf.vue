@@ -101,7 +101,7 @@ export default {
       console.log(`data` , data);
       data.forEach(element => {
         that.shelfRecordDetail.push({
-          shelfSerialNo: that.shelfCounter + '',
+          shelfSerialNo: `shelf` + (that.shelfCounter).toString(),
           materialCode: element.materialCode,
           batchCode: element.batchCode,
           unitId: element.unitId,
@@ -124,7 +124,6 @@ export default {
       that.$axios
         .post(`http://localhost:8090/wareHouse/stockIn/getLastShelfRecordId`,{})
         .then(response => {
-          console.log(`shelfCounter`,that.shelfCounter);
           that.shelfCounter = parseInt(response.data) + 1;
           console.log("shelfCounter:" + that.shelfCounter);
           console.log(`获取最后一条上架记录的id成功`);
@@ -183,7 +182,9 @@ export default {
         "note" : '',
       })
       .then(response => {
-        console.log("添加入库记录",response.data);
+        if(response.data === 1){
+          console.log("添加入库记录",response.data);
+        }
       })
       .catch(error => {console.log(`出错` ,error)})
       for(let i=0; i<that.selectedData.length; i++) {
