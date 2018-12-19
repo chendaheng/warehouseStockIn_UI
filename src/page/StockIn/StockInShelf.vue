@@ -187,29 +187,36 @@ export default {
         }
       })
       .catch(error => {console.log(`出错` ,error)})
-      for(let i=0; i<that.selectedData.length; i++) {
-        if(that.selectedData[i].restQuantity < parseInt(that.selectedData[i].shelfQuantity)) {
+      let sendData = that.selectedData;
+      for(let i=0; i<sendData.length; i++) {
+        if(sendData[i].restQuantity < parseInt(sendData[i].shelfQuantity)) {
           alert("输入数据有误，请检查！");
           break;
         }
-        let len = that.selectedData[i].location.length;
-        that.selectedData[i].locationId = that.selectedData[i].location[len-1];
-        console.log("发送数据前：",that.selectedData[i]);
-        that.$axios.post(`http://localhost:8090/wareHouse/stockIn/addShelfRecordDetail`, that.selectedData[i])
+        let len = sendData[i].location.length;
+        sendData[i].locationId = sendData[i].location[len-1];
+        console.log("发送数据前：",i,sendData[i]);
+        that.$axios.post(`http://localhost:8090/wareHouse/stockIn/addShelfRecordDetail`, sendData[i])
         .then(response => {
           console.log("添加入库记录明细",response.data);
-          console.log("当前data:",that);
-          this.selectedData[i].restQuantity -= parseInt(this.selectedData[i].shelfQuantity);
-          this.selectedData[i].shelfQuantity = this.selectedData[i].restQuantity;
-          this.$refs.multiTable.clearSelection();
+          // console.log("当前data:",that);
+          sendData[i].restQuantity -= parseInt(sendData[i].shelfQuantity);
+          sendData[i].shelfQuantity = sendData[i].restQuantity;
+          console.log("发送数据后：",i,sendData[i]);
         })
         .catch(error => {console.log(error)});
-        
       }
+      console.log("修改");
+      this.selectedData = sendData;
+      this.$refs.multiTable.clearSelection();
     },
     cancel() {
-      console.log(this.selectedData);
-      this.$router.push({name : "StockInTestList"})
+      console.log('selectData',this.selectedData);
+      // this.$router.push({name : "StockInTestList"})
+
+      let data = this.selectedData;
+      console.log('data',data);
+
     },
     getNowFormatDate() {
       var date = new Date();

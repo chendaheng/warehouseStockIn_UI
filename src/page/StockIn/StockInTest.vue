@@ -461,30 +461,30 @@ export default {
           console.log(`更新检验记录明细失败`);
         });
     },
-    //判断一条检验记录的物料是否全部检验
-    isAllMaterialGetTest(params, callback){
-      const that = this;
-      that.$axios
-        .post(`http://localhost:8090/wareHouse/stockIn/isAllMaterialGetTest`, params)
-        .then(response => {
-          that.controlData.isAllMaterialGetTestFlag = response.data;
-          console.log(`一条检验记录的物料是否全部检验标志位为` + that.controlData.isAllMaterialGetTestFlag);
-          if(that.controlData.isAllMaterialGetTestFlag === 1){
-            console.log(`更新检验记录的状态`);
-            let updateParams = {
-              qualityTestSerialNo : that.qualityTestRecord.params.qualityTestSerialNo,
-              receivingSerialNo: that.qualityTestRecord.params.receivingSerialNo,
-              status: 1,
-            }
-            that.updateQualityTestRecord(updateParams);
-          }
-        })
-        .catch(error => {
-          console.log(error);
-        });
-        if (callback !== undefined)
-          return callback();
-    },
+    // //判断一条检验记录的物料是否全部检验
+    // isAllMaterialGetTest(params, callback){
+    //   const that = this;
+    //   that.$axios
+    //     .post(`http://localhost:8090/wareHouse/stockIn/isAllMaterialGetTest`, params)
+    //     .then(response => {
+    //       that.controlData.isAllMaterialGetTestFlag = response.data;
+    //       console.log(`一条检验记录的物料是否全部检验标志位为` + that.controlData.isAllMaterialGetTestFlag);
+    //       if(that.controlData.isAllMaterialGetTestFlag === 1){
+    //         console.log(`更新检验记录的状态`);
+    //         let updateParams = {
+    //           qualityTestSerialNo : that.qualityTestRecord.params.qualityTestSerialNo,
+    //           receivingSerialNo: that.qualityTestRecord.params.receivingSerialNo,
+    //           status: 1,
+    //         }
+    //         that.updateQualityTestRecord(updateParams);
+    //       }
+    //     })
+    //     .catch(error => {
+    //       console.log(error);
+    //     });
+    //     if (callback !== undefined)
+    //       return callback();
+    // },
     // 根据入库计划流水号获取检验信息
     getTestDataByPlanSerialNo(params){
       const that = this;
@@ -587,10 +587,16 @@ export default {
       console.log("入库计划更新Params如下");
       console.log(updatePlanParams);
       that.updateStockInPlanByParams(updatePlanParams);
-      let getFlagParams = {
-          qualityTestSerialNo: updateTestRecordDetailData[0].qualityTestSerialNo,
-        }
-      that.isAllMaterialGetTest(getFlagParams);
+      // let getFlagParams = {
+      //     qualityTestSerialNo: updateTestRecordDetailData[0].qualityTestSerialNo,
+      //   }
+      // that.isAllMaterialGetTest(getFlagParams);
+      let updateParams = {
+        qualityTestSerialNo : that.qualityTestRecord.params.qualityTestSerialNo,
+        receivingSerialNo: that.qualityTestRecord.params.receivingSerialNo,
+        status: 1,
+      }
+      that.updateQualityTestRecord(updateParams);
     }
   }
 }
